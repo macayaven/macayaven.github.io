@@ -57,7 +57,7 @@ $(document).on('click', '#predict-button', async function() {
 		}).slice(0, 5);
 
 	document.getElementById("predict-box").style.display = "block";
-	document.getElementById("prediction").innerHTML = "MobileNet prediction <br><b>" + results[0].className + "</b>";
+	document.getElementById("prediction").innerHTML = "Bugs demo prediction <br><b>" + results[0].className + "</b>";
 
 	var ul = document.getElementById("predict-list");
 	ul.innerHTML = "";
