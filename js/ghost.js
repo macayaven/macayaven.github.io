@@ -57,7 +57,7 @@
       
       // Movement properties - same base speed regardless of device
       this.baseSpeed = 150; // Base speed in pixels per second
-      this.speed = this.baseSpeed; // Actual speed (can be modified by difficulty)
+      this.speed = this.baseSpeed * (this.scaleFactor / 0.1875); // Adjust speed relative to scale factor so that relative speed (in ghost sizes per second) is consistent across devices
       this.direction = { x: 0, y: 0 };
       
       // Direction change behavior

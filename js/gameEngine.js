@@ -80,6 +80,12 @@
           event.preventDefault();
           restart();
         });
+        // Also add a touchend event listener for mobile devices
+        newRestartButton.addEventListener('touchend', function(event) {
+          console.log("Restart button touched");
+          event.preventDefault();
+          restart();
+        });
         console.log("Restart button listener added");
       } else {
         console.warn("Restart button not found");
