@@ -37,8 +37,9 @@
     context: null,
     difficultyLevel: 1,
     difficultyTimer: 0,
-    difficultyInterval: 10000, // Increase difficulty every 10 seconds
-    gracePeriod: 3000, // 3 second grace period before collision detection starts
+    difficultyInterval: 30000, // 30 seconds per level
+    gracePeriod: 3000, // 3 second grace period at start
+    gracePeriodMax: 3000,
     maze: null
   };
   
@@ -94,6 +95,7 @@
     gameState.difficultyTimer = 0;
     gameState.difficultyInterval = 30000; // 30 seconds per level
     gameState.gracePeriod = 3000; // 3 second grace period at start
+    gameState.gracePeriodMax = 3000;
     
     // Initialize maze first
     const canvasDimensions = CanvasManager.getDimensions();
@@ -573,6 +575,7 @@
     
     // Give a brief grace period when difficulty increases
     gameState.gracePeriod = 1500; // 1.5 second grace period on difficulty increase
+    gameState.gracePeriodMax = 1500;
     
     // Ensure all entities are in valid positions for the new level
     validateEntityPositions();
@@ -701,7 +704,7 @@
     const canvasDimensions = CanvasManager.getDimensions();
     
     // Calculate remaining grace period percentage
-    const percentage = gameState.gracePeriod / 3000; // 3000ms is the full grace period
+    const percentage = gameState.gracePeriod / (gameState.gracePeriodMax || 3000);
     
     // Draw text
     ctx.font = '20px Arial';
@@ -753,7 +756,8 @@
    */
   function endGame() {
     gameState.isGameOver = true;
-    
+    gameState.isRunning = false;
+
     // Update final score in game over screen
     if (typeof document !== 'undefined') {
       const finalScoreElement = document.getElementById('finalScore');
@@ -775,6 +779,7 @@
     gameState.difficultyLevel = 1;
     gameState.difficultyTimer = 0;
     gameState.gracePeriod = 3000; // 3 seconds grace period
+    gameState.gracePeriodMax = 3000;
     
     // Clear ghosts
     gameState.ghosts = [];
@@ -942,6 +947,7 @@
   exports.initialize = initialize;
   exports.restart = restart;
   exports.isValidMove = isValidMove;
+  exports.isEntityInValidPosition = isEntityInValidPosition;
   
   // For testing purposes, export internal functions
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {

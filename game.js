@@ -126,15 +126,6 @@
       alert('Error starting game. Please check console for details and refresh to try again.');
     }
     
-    // Add event listener for restarting the game
-    const restartButton = document.getElementById('restart-button');
-    if (restartButton) {
-      restartButton.addEventListener('click', function() {
-        console.log('Game restart requested');
-        GameEngine.restart();
-      });
-    }
-    
     console.log('Game started successfully!');
   }
 })(); 
