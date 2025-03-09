@@ -30,7 +30,7 @@
       this.faceClosed = assets.faceClosed;
       
       // Scale factor to make player fit better in maze
-      this.scaleFactor = 0.375;
+      this.scaleFactor = 0.1875;
       
       // Set dimensions based on the image size with scaling
       this.width = assets.faceOpen.width * this.scaleFactor;
@@ -188,7 +188,8 @@
      */
     getBounds() {
       // Add a slight reduction to make the hitbox a bit smaller than visual size
-      const hitboxReduction = 4;
+      // Using a smaller reduction for the much smaller character size
+      const hitboxReduction = 2;
       return {
         left: this.x + hitboxReduction,
         right: this.x + this.width - hitboxReduction,
