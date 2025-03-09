@@ -30,7 +30,7 @@
       this.image = image;
       
       // Scale factor to make ghost fit better in maze
-      this.scaleFactor = 0.5;
+      this.scaleFactor = 0.375;
       
       // Set dimensions based on the image size with scaling
       this.width = image.width * this.scaleFactor;
@@ -173,26 +173,26 @@
      */
     drawFallback(context) {
       // Draw the ghost outline for debugging
-      context.strokeStyle = '#FF0000';
+      context.strokeStyle = '#FFFFFF'; // White outline for better visibility
       context.strokeRect(this.x, this.y, this.width, this.height);
       
-      // Determine ghost color based on the image reference
-      let ghostColor = '#FF0000'; // Default red
+      // Determine ghost color based on the image reference - use brighter colors for green background
+      let ghostColor = '#FF0000'; // Bright red for default
       if (this.image && this.image.src) {
         const imgSrc = this.image.src.toLowerCase();
         if (imgSrc.includes('cat1')) {
-          ghostColor = '#FF7700'; // Orange for cat1
+          ghostColor = '#FFA500'; // Bright orange for cat1
         } else if (imgSrc.includes('cat2')) {
-          ghostColor = '#00CCFF'; // Light blue for cat2
+          ghostColor = '#00FFFF'; // Cyan for cat2
         }
       }
       
-      // Draw ghost body
+      // Draw ghost body with more saturated colors
       const radius = this.width / 2;
       const centerX = this.x + radius;
       const centerY = this.y + radius;
       
-      // Draw head (top half circle)
+      // Draw head (top half circle) with bright color
       context.beginPath();
       context.arc(centerX, centerY - radius/2, radius/2, Math.PI, 0, true);
       context.fillStyle = ghostColor;

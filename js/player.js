@@ -30,7 +30,7 @@
       this.faceClosed = assets.faceClosed;
       
       // Scale factor to make player fit better in maze
-      this.scaleFactor = 0.5;
+      this.scaleFactor = 0.375;
       
       // Set dimensions based on the image size with scaling
       this.width = assets.faceOpen.width * this.scaleFactor;
@@ -156,33 +156,30 @@
       const centerY = this.y + radius;
       
       // Draw a colored rectangle for debugging
-      context.strokeStyle = 'yellow';
+      context.strokeStyle = 'white';
       context.lineWidth = 2;
       context.strokeRect(this.x, this.y, this.width, this.height);
       
-      // Draw a solid circle for the player
-      context.fillStyle = 'yellow';
+      // Draw the player body - brighter yellow for visibility on green
+      context.fillStyle = '#FFFF00'; // Bright yellow
       context.beginPath();
       context.arc(centerX, centerY, radius - 5, 0, Math.PI * 2);
       context.fill();
       
-      // Draw eyes
-      context.fillStyle = 'black';
-      context.beginPath();
-      context.arc(this.x + this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
-      context.arc(this.x + 2*this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
-      context.fill();
-      
-      // Draw mouth based on state
+      // Draw mouth based on animation state
+      context.fillStyle = '#000000';
       context.beginPath();
       if (this.mouthOpen) {
-        context.arc(centerX, centerY, radius/4, 0.2 * Math.PI, 0.8 * Math.PI);
+        // Draw open mouth - larger angle for visibility
+        context.arc(centerX, centerY, radius/2, 0.2 * Math.PI, 0.8 * Math.PI);
+        context.lineTo(centerX, centerY);
+        context.closePath();
       } else {
+        // Draw closed mouth - straight line
         context.moveTo(this.x + this.width/3, this.y + 2*this.height/3);
         context.lineTo(this.x + 2*this.width/3, this.y + 2*this.height/3);
       }
-      context.lineWidth = 3;
-      context.stroke();
+      context.fill();
     }
     
     /**
