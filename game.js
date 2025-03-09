@@ -29,11 +29,27 @@
     loadingElement.style.fontSize = '24px';
     gameContainer.appendChild(loadingElement);
     
+    // Add debug info to the console
+    console.log('Asset URLs to load:', assetUrls);
+    
     try {
       // Try to load PNG assets first
       AssetManager.loadImages(assetUrls)
         .then(function(loadedAssets) {
-          console.log('PNG assets loaded successfully');
+          console.log('PNG assets loaded successfully:', loadedAssets);
+          
+          // Verify that all assets were loaded correctly
+          let allAssetsValid = true;
+          Object.keys(loadedAssets).forEach(key => {
+            if (!loadedAssets[key] || !loadedAssets[key].width) {
+              console.error(`Asset ${key} failed to load properly`);
+              allAssetsValid = false;
+            }
+          });
+          
+          if (!allAssetsValid) {
+            throw new Error('Some assets did not load properly. Falling back to SVG.');
+          }
           
           // Remove the loading message
           gameContainer.removeChild(loadingElement);
@@ -49,14 +65,23 @@
           
           // Use SVG assets instead
           setTimeout(function() {
+            console.log('Generating SVG assets');
             // Generate SVG assets
-            const svgAssets = SVGAssets.generateSVGAssets();
-            
-            // Remove the loading message
-            gameContainer.removeChild(loadingElement);
-            
-            // Start the game with SVG assets
-            startGame(svgAssets);
+            SVGAssets.generateSVGAssets()
+              .then(svgAssets => {
+                console.log('SVG assets generated:', svgAssets);
+                
+                // Remove the loading message
+                gameContainer.removeChild(loadingElement);
+                
+                // Start the game with SVG assets
+                startGame(svgAssets);
+              })
+              .catch(error => {
+                console.error('Error generating SVG assets:', error);
+                loadingElement.textContent = 'Error loading game assets. Please refresh and try again.';
+                loadingElement.style.color = 'red';
+              });
           }, 500); // Short delay to show the message
         });
     } catch (e) {
@@ -73,8 +98,11 @@
    * @param {Object} assets - The loaded game assets.
    */
   function startGame(assets) {
+    console.log('Starting game with assets:', assets);
+    
     // Check if device is mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('Is mobile device:', isMobile);
     
     // Show mobile instructions if on mobile device
     if (isMobile) {
@@ -90,12 +118,19 @@
     }
     
     // Initialize the game engine with the assets
-    GameEngine.initialize(assets);
+    try {
+      GameEngine.initialize(assets);
+      console.log('Game Engine initialized successfully');
+    } catch (error) {
+      console.error('Error initializing GameEngine:', error);
+      alert('Error starting game. Please check console for details and refresh to try again.');
+    }
     
     // Add event listener for restarting the game
     const restartButton = document.getElementById('restart-button');
     if (restartButton) {
       restartButton.addEventListener('click', function() {
+        console.log('Game restart requested');
         GameEngine.restart();
       });
     }
