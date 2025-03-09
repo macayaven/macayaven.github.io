@@ -55,13 +55,43 @@
      * @param {number} deltaTime - The time since the last update in milliseconds.
      */
     update(direction, deltaTime) {
-      // Calculate movement delta
-      const dx = direction.x * this.speed * (deltaTime / 1000);
-      const dy = direction.y * this.speed * (deltaTime / 1000);
-      
-      // Update position
-      this.x += dx;
-      this.y += dy;
+      if (typeof window !== 'undefined' && window.GameEngine && window.GameEngine.isValidMove) {
+        // Use GameEngine's isValidMove function for wall collision
+        const distance = this.speed * (deltaTime / 1000);
+        
+        if (direction.x !== 0 || direction.y !== 0) {
+          // Save current position
+          const oldX = this.x;
+          const oldY = this.y;
+          
+          // Try to move in x direction
+          if (direction.x !== 0 && window.GameEngine.isValidMove(
+            { x: this.x, y: this.y }, 
+            { x: direction.x, y: 0 }, 
+            distance
+          )) {
+            this.x += direction.x * distance;
+          }
+          
+          // Try to move in y direction
+          if (direction.y !== 0 && window.GameEngine.isValidMove(
+            { x: this.x, y: this.y }, 
+            { x: 0, y: direction.y }, 
+            distance
+          )) {
+            this.y += direction.y * distance;
+          }
+        }
+      } else {
+        // Fallback to original movement if GameEngine is not available
+        // Calculate movement delta
+        const dx = direction.x * this.speed * (deltaTime / 1000);
+        const dy = direction.y * this.speed * (deltaTime / 1000);
+        
+        // Update position
+        this.x += dx;
+        this.y += dy;
+      }
       
       // Keep player within canvas bounds
       const canvasDimensions = CanvasManager.getDimensions();
@@ -85,49 +115,61 @@
       const image = this.mouthOpen ? this.faceOpen : this.faceClosed;
       
       try {
-        // Draw the image
-        context.drawImage(image, this.x, this.y, this.width, this.height);
+        // Check if the image is available and loaded
+        const imageLoadedCorrectly = image && image.width > 0 && image.height > 0;
         
-        // Draw a colored outline around the player for debugging
-        context.strokeStyle = 'yellow';
-        context.lineWidth = 2;
-        context.strokeRect(this.x, this.y, this.width, this.height);
-        
-        // Draw a solid circle in the center of the player as a fallback
-        context.fillStyle = 'yellow';
-        context.beginPath();
-        context.arc(this.x + this.width/2, this.y + this.height/2, this.width/2 - 5, 0, Math.PI * 2);
-        context.fill();
-        
-        // Draw eyes
-        context.fillStyle = 'black';
-        context.beginPath();
-        context.arc(this.x + this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
-        context.arc(this.x + 2*this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
-        context.fill();
-        
-        // Draw mouth based on state
-        context.beginPath();
-        if (this.mouthOpen) {
-          context.arc(this.x + this.width/2, this.y + this.height/2, this.width/4, 0.2 * Math.PI, 0.8 * Math.PI);
+        if (imageLoadedCorrectly) {
+          // Draw the actual image
+          context.drawImage(image, this.x, this.y, this.width, this.height);
+          
+          // Add a small dot in the corner to confirm image rendering
+          context.fillStyle = 'white';
+          context.beginPath();
+          context.arc(this.x + 5, this.y + 5, 2, 0, Math.PI * 2);
+          context.fill();
         } else {
-          context.moveTo(this.x + this.width/3, this.y + 2*this.height/3);
-          context.lineTo(this.x + 2*this.width/3, this.y + 2*this.height/3);
+          // Draw fallback
+          this.drawFallback(context);
         }
-        context.lineWidth = 3;
-        context.stroke();
       } catch (e) {
         console.error('Error drawing player:', e);
-        
-        // Fallback drawing if image fails
-        context.fillStyle = 'yellow';
-        context.fillRect(this.x, this.y, this.width, this.height);
-        
-        // Add text to indicate this is the player
-        context.fillStyle = 'black';
-        context.font = '12px Arial';
-        context.fillText('PLAYER', this.x + 5, this.y + this.height/2);
+        this.drawFallback(context);
       }
+    }
+    
+    /**
+     * Draw a fallback representation of the player if the image fails to load.
+     * @param {CanvasRenderingContext2D} context - The canvas rendering context.
+     */
+    drawFallback(context) {
+      // Draw a colored rectangle for debugging
+      context.strokeStyle = 'yellow';
+      context.lineWidth = 2;
+      context.strokeRect(this.x, this.y, this.width, this.height);
+      
+      // Draw a solid circle for the player
+      context.fillStyle = 'yellow';
+      context.beginPath();
+      context.arc(this.x + this.width/2, this.y + this.height/2, this.width/2 - 5, 0, Math.PI * 2);
+      context.fill();
+      
+      // Draw eyes
+      context.fillStyle = 'black';
+      context.beginPath();
+      context.arc(this.x + this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+      context.arc(this.x + 2*this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+      context.fill();
+      
+      // Draw mouth based on state
+      context.beginPath();
+      if (this.mouthOpen) {
+        context.arc(this.x + this.width/2, this.y + this.height/2, this.width/4, 0.2 * Math.PI, 0.8 * Math.PI);
+      } else {
+        context.moveTo(this.x + this.width/3, this.y + 2*this.height/3);
+        context.lineTo(this.x + 2*this.width/3, this.y + 2*this.height/3);
+      }
+      context.lineWidth = 3;
+      context.stroke();
     }
     
     /**
