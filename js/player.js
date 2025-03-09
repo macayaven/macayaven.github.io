@@ -83,7 +83,51 @@
     draw(context) {
       // Draw the appropriate image based on mouth state
       const image = this.mouthOpen ? this.faceOpen : this.faceClosed;
-      context.drawImage(image, this.x, this.y, this.width, this.height);
+      
+      try {
+        // Draw the image
+        context.drawImage(image, this.x, this.y, this.width, this.height);
+        
+        // Draw a colored outline around the player for debugging
+        context.strokeStyle = 'yellow';
+        context.lineWidth = 2;
+        context.strokeRect(this.x, this.y, this.width, this.height);
+        
+        // Draw a solid circle in the center of the player as a fallback
+        context.fillStyle = 'yellow';
+        context.beginPath();
+        context.arc(this.x + this.width/2, this.y + this.height/2, this.width/2 - 5, 0, Math.PI * 2);
+        context.fill();
+        
+        // Draw eyes
+        context.fillStyle = 'black';
+        context.beginPath();
+        context.arc(this.x + this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+        context.arc(this.x + 2*this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+        context.fill();
+        
+        // Draw mouth based on state
+        context.beginPath();
+        if (this.mouthOpen) {
+          context.arc(this.x + this.width/2, this.y + this.height/2, this.width/4, 0.2 * Math.PI, 0.8 * Math.PI);
+        } else {
+          context.moveTo(this.x + this.width/3, this.y + 2*this.height/3);
+          context.lineTo(this.x + 2*this.width/3, this.y + 2*this.height/3);
+        }
+        context.lineWidth = 3;
+        context.stroke();
+      } catch (e) {
+        console.error('Error drawing player:', e);
+        
+        // Fallback drawing if image fails
+        context.fillStyle = 'yellow';
+        context.fillRect(this.x, this.y, this.width, this.height);
+        
+        // Add text to indicate this is the player
+        context.fillStyle = 'black';
+        context.font = '12px Arial';
+        context.fillText('PLAYER', this.x + 5, this.y + this.height/2);
+      }
     }
     
     /**

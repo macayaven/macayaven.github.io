@@ -119,7 +119,58 @@
      * @param {CanvasRenderingContext2D} context - The canvas rendering context.
      */
     draw(context) {
-      context.drawImage(this.image, this.x, this.y, this.width, this.height);
+      try {
+        // Draw the ghost image
+        context.drawImage(this.image, this.x, this.y, this.width, this.height);
+        
+        // Draw a colored outline around the ghost for debugging
+        context.strokeStyle = 'red';
+        context.lineWidth = 2;
+        context.strokeRect(this.x, this.y, this.width, this.height);
+        
+        // Draw a ghost shape as a fallback
+        const ghostColor = this.image === window.cat1 ? '#ff6666' : '#6666ff';
+        context.fillStyle = ghostColor;
+        
+        // Draw ghost body
+        context.beginPath();
+        // Head (top half circle)
+        context.arc(this.x + this.width/2, this.y + this.height/3, this.width/3, Math.PI, 0, true);
+        // Body sides
+        context.lineTo(this.x + this.width, this.y + this.height - this.height/4);
+        // Bottom zigzag
+        context.lineTo(this.x + this.width*0.75, this.y + this.height - this.height/3);
+        context.lineTo(this.x + this.width/2, this.y + this.height);
+        context.lineTo(this.x + this.width/4, this.y + this.height - this.height/3);
+        context.lineTo(this.x, this.y + this.height - this.height/4);
+        context.closePath();
+        context.fill();
+        
+        // Draw eyes
+        context.fillStyle = 'white';
+        context.beginPath();
+        context.arc(this.x + this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+        context.arc(this.x + 2*this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+        context.fill();
+        
+        // Draw pupils
+        context.fillStyle = 'black';
+        context.beginPath();
+        context.arc(this.x + this.width/3 + 2, this.y + this.height/3, 2, 0, Math.PI * 2);
+        context.arc(this.x + 2*this.width/3 + 2, this.y + this.height/3, 2, 0, Math.PI * 2);
+        context.fill();
+      } catch (e) {
+        console.error('Error drawing ghost:', e);
+        
+        // Super simple fallback
+        context.fillStyle = 'red';
+        context.fillRect(this.x, this.y, this.width, this.height);
+        
+        // Add text to indicate this is a ghost
+        context.fillStyle = 'white';
+        context.font = '12px Arial';
+        context.fillText('GHOST', this.x + 5, this.y + this.height/2);
+      }
     }
     
     /**
