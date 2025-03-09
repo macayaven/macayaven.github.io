@@ -29,9 +29,12 @@
       // Store the ghost image
       this.image = image;
       
-      // Set dimensions based on the image size
-      this.width = image.width;
-      this.height = image.height;
+      // Scale factor to make ghost fit better in maze
+      this.scaleFactor = 0.5;
+      
+      // Set dimensions based on the image size with scaling
+      this.width = image.width * this.scaleFactor;
+      this.height = image.height * this.scaleFactor;
       
       // Set initial position
       this.x = position.x;
@@ -138,24 +141,28 @@
      */
     draw(context) {
       try {
-        // Check if the image is available and loaded properly
+        // Check if the image is available and loaded
         const imageLoadedCorrectly = this.image && this.image.width > 0 && this.image.height > 0;
         
         if (imageLoadedCorrectly) {
-          // Draw the actual cat image
-          context.drawImage(this.image, this.x, this.y, this.width, this.height);
+          // Draw the actual image with scaling
+          context.drawImage(
+            this.image, 
+            this.x, 
+            this.y, 
+            this.width, 
+            this.height
+          );
           
-          // Add a small dot in the corner to confirm image rendering
+          // Add small white dot to confirm real image is drawn
           context.fillStyle = 'white';
-          context.beginPath();
-          context.arc(this.x + 5, this.y + 5, 2, 0, Math.PI * 2);
-          context.fill();
+          context.fillRect(this.x, this.y, 2, 2);
         } else {
-          // Draw fallback
+          // Fall back to drawn representation
           this.drawFallback(context);
         }
-      } catch (e) {
-        console.error('Error drawing ghost:', e);
+      } catch (error) {
+        console.error('Error drawing ghost:', error);
         this.drawFallback(context);
       }
     }
@@ -165,41 +172,54 @@
      * @param {CanvasRenderingContext2D} context - The canvas rendering context.
      */
     drawFallback(context) {
-      // Draw outline for debugging
-      context.strokeStyle = 'red';
-      context.lineWidth = 2;
+      // Draw the ghost outline for debugging
+      context.strokeStyle = '#FF0000';
       context.strokeRect(this.x, this.y, this.width, this.height);
       
-      // Determine color based on image reference (this is a guess, adjust as needed)
-      const ghostColor = this.image === window.cat1 ? '#ff6666' : '#6666ff';
-      context.fillStyle = ghostColor;
+      // Determine ghost color based on the image reference
+      let ghostColor = '#FF0000'; // Default red
+      if (this.image && this.image.src) {
+        const imgSrc = this.image.src.toLowerCase();
+        if (imgSrc.includes('cat1')) {
+          ghostColor = '#FF7700'; // Orange for cat1
+        } else if (imgSrc.includes('cat2')) {
+          ghostColor = '#00CCFF'; // Light blue for cat2
+        }
+      }
       
       // Draw ghost body
+      const radius = this.width / 2;
+      const centerX = this.x + radius;
+      const centerY = this.y + radius;
+      
+      // Draw head (top half circle)
       context.beginPath();
-      // Head (top half circle)
-      context.arc(this.x + this.width/2, this.y + this.height/3, this.width/3, Math.PI, 0, true);
-      // Body sides
-      context.lineTo(this.x + this.width, this.y + this.height - this.height/4);
-      // Bottom zigzag
-      context.lineTo(this.x + this.width*0.75, this.y + this.height - this.height/3);
-      context.lineTo(this.x + this.width/2, this.y + this.height);
-      context.lineTo(this.x + this.width/4, this.y + this.height - this.height/3);
-      context.lineTo(this.x, this.y + this.height - this.height/4);
+      context.arc(centerX, centerY - radius/2, radius/2, Math.PI, 0, true);
+      context.fillStyle = ghostColor;
+      context.fill();
+      
+      // Draw body sides
+      context.beginPath();
+      context.moveTo(centerX, centerY - radius/2);
+      context.lineTo(centerX + radius/2, centerY);
+      context.lineTo(centerX, centerY + radius/2);
+      context.lineTo(centerX - radius/2, centerY);
       context.closePath();
+      context.fillStyle = ghostColor;
       context.fill();
       
       // Draw eyes
       context.fillStyle = 'white';
       context.beginPath();
-      context.arc(this.x + this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
-      context.arc(this.x + 2*this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+      context.arc(centerX - radius/4, centerY - radius/4, 5, 0, Math.PI * 2);
+      context.arc(centerX + radius/4, centerY - radius/4, 5, 0, Math.PI * 2);
       context.fill();
       
       // Draw pupils
       context.fillStyle = 'black';
       context.beginPath();
-      context.arc(this.x + this.width/3 + 2, this.y + this.height/3, 2, 0, Math.PI * 2);
-      context.arc(this.x + 2*this.width/3 + 2, this.y + this.height/3, 2, 0, Math.PI * 2);
+      context.arc(centerX - radius/4 + 2, centerY - radius/4, 2, 0, Math.PI * 2);
+      context.arc(centerX + radius/4 + 2, centerY - radius/4, 2, 0, Math.PI * 2);
       context.fill();
     }
     
@@ -208,11 +228,13 @@
      * @returns {Object} An object with x, y, width, and height properties.
      */
     getBounds() {
+      // Add a slight reduction to make the hitbox a bit smaller than visual size
+      const hitboxReduction = 4;
       return {
-        x: this.x,
-        y: this.y,
-        width: this.width,
-        height: this.height
+        left: this.x + hitboxReduction,
+        right: this.x + this.width - hitboxReduction,
+        top: this.y + hitboxReduction,
+        bottom: this.y + this.height - hitboxReduction
       };
     }
   }
