@@ -55,13 +55,14 @@
       this.x = position.x;
       this.y = position.y;
       
-      // Movement properties
-      this.speed = 150; // Pixels per second
+      // Movement properties - same base speed regardless of device
+      this.baseSpeed = 150; // Base speed in pixels per second
+      this.speed = this.baseSpeed; // Actual speed (can be modified by difficulty)
       this.direction = { x: 0, y: 0 };
       
       // Direction change behavior
       this.directionTimer = 0;
-      this.directionChangeInterval = 2000; // Change direction every 2 seconds
+      this.directionChangeInterval = 2000; // Change direction every 2 seconds by default
       
       // Choose initial direction
       this.chooseNewDirection();
@@ -75,9 +76,13 @@
       // Track time since last direction change
       this.directionTimer += deltaTime;
       
+      // Use normalized deltaTime to ensure consistent speed across devices
+      // This helps prevent faster movement on devices with different framerates
+      const normalizedDeltaTime = Math.min(deltaTime, 50); // Cap at 50ms to prevent huge jumps
+      
       // Calculate movement delta based on speed and time
-      const dx = this.direction.x * this.speed * (deltaTime / 1000);
-      const dy = this.direction.y * this.speed * (deltaTime / 1000);
+      const dx = this.direction.x * this.speed * (normalizedDeltaTime / 1000);
+      const dy = this.direction.y * this.speed * (normalizedDeltaTime / 1000);
       
       // Calculate potential new position
       const newX = this.x + dx;
@@ -91,7 +96,7 @@
         canMove = window.GameEngine.isValidMove(
           {x: this.x, y: this.y}, 
           {x: this.direction.x, y: this.direction.y}, 
-          this.speed * (deltaTime / 1000)
+          this.speed * (normalizedDeltaTime / 1000)
         );
         
         if (canMove) {

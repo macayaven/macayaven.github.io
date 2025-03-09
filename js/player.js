@@ -73,10 +73,19 @@
      * @param {number} deltaTime - The time since the last update in milliseconds.
      */
     update(direction, deltaTime) {
+      // Use normalized deltaTime to ensure consistent speed across devices
+      // This helps prevent faster movement on devices with different framerates
+      const normalizedDeltaTime = Math.min(deltaTime, 50); // Cap at 50ms to prevent huge jumps
+      
+      // Calculate potential movement distance
+      const distance = this.speed * (normalizedDeltaTime / 1000);
+      
+      // Calculate potential movement in both directions
+      let dx = direction.x * distance;
+      let dy = direction.y * distance;
+      
       if (typeof window !== 'undefined' && window.GameEngine && window.GameEngine.isValidMove) {
         // Use GameEngine's isValidMove function for wall collision
-        const distance = this.speed * (deltaTime / 1000);
-        
         if (direction.x !== 0 || direction.y !== 0) {
           // Save current position
           const oldX = this.x;
@@ -102,10 +111,6 @@
         }
       } else {
         // Fallback to original movement if GameEngine is not available
-        // Calculate movement delta
-        const dx = direction.x * this.speed * (deltaTime / 1000);
-        const dy = direction.y * this.speed * (deltaTime / 1000);
-        
         // Update position
         this.x += dx;
         this.y += dy;
@@ -117,7 +122,7 @@
       this.y = Math.max(0, Math.min(this.y, canvasDimensions.height - this.height));
       
       // Update animation timer and toggle mouth state
-      this.animationTimer += deltaTime;
+      this.animationTimer += normalizedDeltaTime;
       if (this.animationTimer >= this.animationInterval) {
         this.mouthOpen = !this.mouthOpen;
         this.animationTimer = 0;
