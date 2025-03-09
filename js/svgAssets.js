@@ -67,29 +67,47 @@
   }
   
   /**
-   * Generate SVG assets for the game.
-   * @returns {Object} - Object containing all SVG assets as data URLs.
-   */
-  function generateSVGAssets() {
-    return {
-      faceOpen: createImageFromSVG(generateFaceOpenSVG()),
-      faceClosed: createImageFromSVG(generateFaceClosedSVG()),
-      cat1: createImageFromSVG(generateCatSVG('#ff6666')), // Red cat
-      cat2: createImageFromSVG(generateCatSVG('#6666ff'))  // Blue cat
-    };
-  }
-  
-  /**
    * Create an Image object from an SVG data URL.
    * @param {string} svgDataURL - The SVG data URL.
    * @returns {Image} - The created Image object.
    */
   function createImageFromSVG(svgDataURL) {
     const img = new Image();
-    img.src = svgDataURL;
     img.width = 64;
     img.height = 64;
-    return img;
+    
+    // Ensure the image has time to load
+    return new Promise((resolve) => {
+      img.onload = () => {
+        console.log('SVG image loaded successfully:', img.width, img.height);
+        resolve(img);
+      };
+      
+      img.onerror = (err) => {
+        console.error('Error loading SVG image:', err);
+        // Still resolve with the image to allow the game to continue
+        resolve(img);
+      };
+      
+      // Set the source after attaching event handlers
+      img.src = svgDataURL;
+    });
+  }
+  
+  /**
+   * Generate SVG assets for the game.
+   * @returns {Promise<Object>} - Promise that resolves with object containing all SVG assets as images.
+   */
+  function generateSVGAssets() {
+    return Promise.all([
+      createImageFromSVG(generateFaceOpenSVG()),
+      createImageFromSVG(generateFaceClosedSVG()),
+      createImageFromSVG(generateCatSVG('#ff6666')), // Red cat
+      createImageFromSVG(generateCatSVG('#6666ff'))  // Blue cat
+    ]).then(([faceOpen, faceClosed, cat1, cat2]) => {
+      console.log('All SVG assets generated and loaded');
+      return { faceOpen, faceClosed, cat1, cat2 };
+    });
   }
   
   // Export functions for use in browser or tests

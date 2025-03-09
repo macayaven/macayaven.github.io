@@ -37,7 +37,8 @@
     context: null,
     difficultyLevel: 1,
     difficultyTimer: 0,
-    difficultyInterval: 10000 // Increase difficulty every 10 seconds
+    difficultyInterval: 10000, // Increase difficulty every 10 seconds
+    gracePeriod: 1500 // 1.5 second grace period before collision detection starts
   };
   
   /**
@@ -86,28 +87,31 @@
     
     const canvasDimensions = CanvasManager.getDimensions();
     
-    // Ghost 1 at top left
+    // Make sure ghosts are placed at a safe distance from the player
+    const safeDistance = 120; // Minimum distance between player and ghosts
+    
+    // Ghost 1 at top left - further away from center
     gameState.ghosts.push(new Ghost(gameState.assets.cat1, {
-      x: 50,
-      y: 50
+      x: Math.max(20, safeDistance),
+      y: Math.max(20, safeDistance)
     }));
     
-    // Ghost 2 at bottom right
+    // Ghost 2 at bottom right - further away from center
     gameState.ghosts.push(new Ghost(gameState.assets.cat2, {
-      x: canvasDimensions.width - 50 - gameState.assets.cat2.width,
-      y: canvasDimensions.height - 50 - gameState.assets.cat2.height
+      x: canvasDimensions.width - Math.max(60, safeDistance) - gameState.assets.cat2.width,
+      y: canvasDimensions.height - Math.max(60, safeDistance) - gameState.assets.cat2.height
     }));
     
-    // Ghost 3 at top right
+    // Ghost 3 at top right - further away from center
     gameState.ghosts.push(new Ghost(gameState.assets.cat1, {
-      x: canvasDimensions.width - 50 - gameState.assets.cat1.width,
-      y: 50
+      x: canvasDimensions.width - Math.max(60, safeDistance) - gameState.assets.cat1.width,
+      y: Math.max(20, safeDistance)
     }));
     
-    // Ghost 4 at bottom left
+    // Ghost 4 at bottom left - further away from center
     gameState.ghosts.push(new Ghost(gameState.assets.cat2, {
-      x: 50,
-      y: canvasDimensions.height - 50 - gameState.assets.cat2.height
+      x: Math.max(20, safeDistance),
+      y: canvasDimensions.height - Math.max(60, safeDistance) - gameState.assets.cat2.height
     }));
   }
   
@@ -136,9 +140,12 @@
         ghost.update(deltaTime);
       });
       
-      // Check for collisions
-      if (CollisionManager.checkPlayerGhostCollisions(gameState.player, gameState.ghosts)) {
+      // Check for collisions after grace period
+      if (gameState.gracePeriod <= 0 && CollisionManager.checkPlayerGhostCollisions(gameState.player, gameState.ghosts)) {
         endGame();
+      } else {
+        // Decrease grace period
+        gameState.gracePeriod = Math.max(0, gameState.gracePeriod - deltaTime);
       }
       
       // Update difficulty timer
@@ -296,6 +303,7 @@
     gameState.score = 0;
     gameState.difficultyLevel = 1;
     gameState.difficultyTimer = 0;
+    gameState.gracePeriod = 1500; // Reset grace period
     
     // Update difficulty display
     updateDifficultyDisplay();
