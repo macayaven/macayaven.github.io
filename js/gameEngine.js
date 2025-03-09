@@ -67,6 +67,9 @@
     // Create player and ghosts
     createEntities();
     
+    // Validate all entity positions
+    validateEntityPositions();
+    
     // Update difficulty display
     updateDifficultyDisplay();
     
@@ -163,7 +166,7 @@
   /**
    * Get a list of valid positions in the maze (path cells)
    * @param {Object} dimensions - Canvas dimensions
-   * @returns {Array} Array of {x, y} positions
+   * @returns {Array} - List of valid positions
    */
   function getMazePositions(dimensions) {
     if (!gameState.maze) return [];
@@ -171,60 +174,66 @@
     const positions = [];
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
-    // Assuming a standard entity size of 12px (half of the previous 24px)
+    // Assuming a standard entity size of 12px
     const entitySize = 12;
     
-    // We'll only use positions that are safely inside path cells
-    const safeDistance = Math.floor(cellSize * 0.3); // 30% of cell size as margin
-    
-    for (let row = 0; row < grid.length; row++) {
-      for (let col = 0; col < grid[row].length; col++) {
-        if (grid[row][col] === 0) { // Path cell
-          // Only use cells that are not adjacent to walls in any direction
-          let isSafePosition = true;
+    // Use a more strict approach to find valid positions
+    // Only use cells that are guaranteed to be safe (away from walls)
+    for (let row = 1; row < grid.length - 1; row++) {
+      for (let col = 1; col < grid[row].length - 1; col++) {
+        // Only consider path cells (0)
+        if (grid[row][col] !== 0) continue;
+        
+        // Check if this is a genuinely safe position
+        // - Must be a path cell 
+        // - Must not have walls in adjacent cells (orthogonally)
+        // - Must be at least one cell away from the maze border
+        const hasNorthWall = grid[row-1][col] === 1;
+        const hasSouthWall = grid[row+1][col] === 1;
+        const hasEastWall = grid[row][col+1] === 1;
+        const hasWestWall = grid[row][col-1] === 1;
+        
+        let safetyScore = 0;
+        
+        // Add safety score based on distance from walls
+        // Higher score = safer position
+        if (!hasNorthWall) safetyScore++;
+        if (!hasSouthWall) safetyScore++;
+        if (!hasEastWall) safetyScore++;
+        if (!hasWestWall) safetyScore++;
+        
+        // Only include positions with at least 3 open directions
+        // (meaning it's in a hallway or intersection, not a dead end)
+        if (safetyScore >= 3) {
+          // Calculate the absolute position that centers the entity in the cell
+          const centerX = offsetX + col * cellSize + (cellSize / 2);
+          const centerY = offsetY + row * cellSize + (cellSize / 2);
           
-          // Check all 8 surrounding cells to make sure none are walls
-          for (let r = Math.max(0, row - 1); r <= Math.min(grid.length - 1, row + 1); r++) {
-            for (let c = Math.max(0, col - 1); c <= Math.min(grid[row].length - 1, col + 1); c++) {
-              // Skip if it's the current cell
-              if (r === row && c === col) continue;
-              
-              // If any neighboring cell is a wall, consider this position unsafe
-              if (grid[r][c] === 1) {
-                // Only safe if it's a diagonal and we're centered in the cell
-                const isDiagonal = (r !== row && c !== col);
-                if (!isDiagonal) {
-                  isSafePosition = false;
-                  break;
-                }
-              }
-            }
-            if (!isSafePosition) break;
-          }
-          
-          if (isSafePosition) {
-            // Calculate position that centers the entity in the cell
-            const centerX = offsetX + col * cellSize + (cellSize / 2);
-            const centerY = offsetY + row * cellSize + (cellSize / 2);
-            
-            positions.push({
-              x: centerX - (entitySize / 2), // Center entity in cell
-              y: centerY - (entitySize / 2),
-              row: row,
-              col: col
-            });
-          }
+          positions.push({
+            x: centerX - (entitySize / 2),
+            y: centerY - (entitySize / 2),
+            row: row,
+            col: col,
+            safetyScore: safetyScore // Higher = safer
+          });
         }
       }
     }
     
-    // If we didn't find any completely safe positions, accept positions with just horizontal/vertical adjacency
-    if (positions.length === 0) {
-      console.warn("No completely safe positions found. Using positions with some adjacent walls.");
-      
-      for (let row = 0; row < grid.length; row++) {
-        for (let col = 0; col < grid[row].length; col++) {
-          if (grid[row][col] === 0) { // Path cell
+    // If we found safe positions, sort them by safety score (safest first)
+    if (positions.length > 0) {
+      positions.sort((a, b) => b.safetyScore - a.safetyScore);
+      return positions;
+    }
+    
+    // Fallback to find ANY valid path cells if we couldn't find perfectly safe ones
+    console.warn("No ideal safe positions found. Looking for any valid path cells.");
+    
+    for (let row = 0; row < grid.length; row++) {
+      for (let col = 0; col < grid[row].length; col++) {
+        if (grid[row][col] === 0) { // Path cell
+          // Verify this position is actually inside a path - double check
+          if (isPositionInsideValidPath(row, col, grid)) {
             const centerX = offsetX + col * cellSize + (cellSize / 2);
             const centerY = offsetY + row * cellSize + (cellSize / 2);
             
@@ -240,6 +249,28 @@
     }
     
     return positions;
+  }
+  
+  /**
+   * Helper function to double check if a position is inside a valid path and not in a wall
+   * @param {number} row - Grid row
+   * @param {number} col - Grid column
+   * @param {Array} grid - Maze grid
+   * @returns {boolean} - True if position is in a valid path
+   */
+  function isPositionInsideValidPath(row, col, grid) {
+    // First, basic check if this cell is a path (0)
+    if (grid[row][col] !== 0) return false;
+    
+    // Check if this cell has at least one direction that's also a path
+    // This helps avoid isolated cells that might be incorrectly marked as paths
+    const hasValidPath = 
+      (row > 0 && grid[row-1][col] === 0) ||
+      (row < grid.length - 1 && grid[row+1][col] === 0) ||
+      (col > 0 && grid[row][col-1] === 0) ||
+      (col < grid[0].length - 1 && grid[row][col+1] === 0);
+    
+    return hasValidPath;
   }
   
   /**
@@ -364,127 +395,126 @@
   }
   
   /**
-   * Main game loop.
-   * @param {number} timestamp - The current timestamp from requestAnimationFrame.
+   * Main game loop
+   * @param {number} timestamp - Current timestamp
    */
   function gameLoop(timestamp) {
-    // Calculate time since last frame
-    const deltaTime = timestamp - gameState.lastTimestamp;
-    gameState.lastTimestamp = timestamp;
+    if (!gameState.isRunning) return;
     
-    // If game is not over, update game state
-    if (!gameState.isGameOver) {
-      // Get current input direction
-      const direction = InputHandler.getDirection();
+    // Calculate delta time since last frame
+    const deltaTime = timestamp - (gameState.lastFrameTime || timestamp);
+    gameState.lastFrameTime = timestamp;
+    
+    // Get player input
+    const direction = InputHandler.getDirection();
+    
+    // Flag to track if we should validate positions this frame
+    const shouldValidatePositions = Math.random() < 0.05; // Randomly validate ~5% of frames
+    
+    // Update player
+    gameState.player.update(direction, deltaTime);
+    
+    // Update ghosts
+    gameState.ghosts.forEach(ghost => {
+      ghost.update(deltaTime);
       
-      // Update player
-      gameState.player.update(direction, deltaTime);
-      
-      // Update ghosts
-      gameState.ghosts.forEach(ghost => {
-        ghost.update(deltaTime);
-      });
-      
-      // Handle grace period
-      if (gameState.gracePeriod > 0) {
-        // Decrease grace period
-        gameState.gracePeriod = Math.max(0, gameState.gracePeriod - deltaTime);
+      // Check for invalid positions after ghost update
+      if (shouldValidatePositions && !isEntityInValidPosition(ghost)) {
+        console.log("Fixing invalid ghost position during gameplay");
         
-        // Log when grace period ends
-        if (gameState.gracePeriod === 0) {
-          console.log('Grace period ended, collision detection activated');
-        }
-      } else {
-        // Check for collisions after grace period
-        if (CollisionManager.checkPlayerGhostCollisions(gameState.player, gameState.ghosts)) {
-          endGame();
+        // Get a new valid position
+        const validPositions = getMazePositions(CanvasManager.getDimensions());
+        if (validPositions.length > 0) {
+          const newPos = getRandomPosition(validPositions);
+          ghost.x = newPos.x;
+          ghost.y = newPos.y;
         }
       }
+    });
+    
+    // Check player position validity after update
+    if (shouldValidatePositions && !isEntityInValidPosition(gameState.player)) {
+      console.log("Fixing invalid player position during gameplay");
       
-      // Update difficulty timer
-      gameState.difficultyTimer += deltaTime;
-      if (gameState.difficultyTimer >= gameState.difficultyInterval) {
-        increaseDifficulty();
-        gameState.difficultyTimer = 0;
+      // Get a new valid position
+      const validPositions = getMazePositions(CanvasManager.getDimensions());
+      if (validPositions.length > 0) {
+        const newPos = getRandomPosition(validPositions);
+        gameState.player.x = newPos.x;
+        gameState.player.y = newPos.y;
       }
-      
-      // Increment score based on movement and time
-      if (direction.x !== 0 || direction.y !== 0) {
-        // Player is moving, give more points
-        gameState.score += Math.round(deltaTime / 10) * gameState.difficultyLevel;
-      } else {
-        // Player is stationary, give fewer points
-        gameState.score += Math.round(deltaTime / 50);
-      }
-      
-      // Update score display
-      updateScoreDisplay();
     }
     
-    // Draw game entities
+    // Grace period countdown
+    if (gameState.gracePeriod > 0) {
+      gameState.gracePeriod -= deltaTime;
+      
+      if (gameState.gracePeriod <= 0) {
+        gameState.gracePeriod = 0;
+        
+        // Log when grace period ends
+        console.log('Grace period ended, collision detection activated');
+      }
+    } else {
+      // Check for collisions after grace period
+      if (CollisionManager.checkPlayerGhostCollisions(gameState.player, gameState.ghosts)) {
+        endGame();
+      }
+    }
+    
+    // Update difficulty timer
+    gameState.difficultyTimer += deltaTime;
+    if (gameState.difficultyTimer >= gameState.difficultyInterval) {
+      increaseDifficulty();
+      gameState.difficultyTimer = 0;
+    }
+    
+    // Increment score based on movement and time
+    if (direction.x !== 0 || direction.y !== 0) {
+      // Player is moving, give more points
+      gameState.score += Math.round(deltaTime / 10) * gameState.difficultyLevel;
+    } else {
+      // Player is stationary, give fewer points
+      gameState.score += Math.round(deltaTime / 50);
+    }
+    
+    // Update score display
+    updateScoreDisplay();
+    
+    // Render the game
     render();
     
     // Continue game loop
-    requestAnimationFrame(gameLoop);
+    if (!gameState.isGameOver) {
+      requestAnimationFrame(gameLoop);
+    }
   }
   
   /**
    * Increase game difficulty.
    */
   function increaseDifficulty() {
-    // Increment difficulty level
     gameState.difficultyLevel++;
     
-    // Update difficulty display
+    // Update the visual display
     updateDifficultyDisplay();
+    
+    // Add more ghosts as difficulty increases
+    if (gameState.difficultyLevel % 2 === 0 && gameState.ghosts.length < 8) {
+      // Maximum of 8 ghosts to avoid overwhelming the player
+      addGhost();
+    }
     
     // Increase ghost speed
     gameState.ghosts.forEach(ghost => {
-      ghost.speed += 20; // Increase speed by 20 pixels per second
-      ghost.directionChangeInterval = Math.max(500, ghost.directionChangeInterval - 200); // Decrease time between direction changes
+      ghost.speed = 150 + (gameState.difficultyLevel - 1) * 20;
     });
     
-    // Add a new ghost if fewer than 8
-    if (gameState.ghosts.length < 8) {
-      const canvasDimensions = CanvasManager.getDimensions();
-      const ghostImage = Math.random() < 0.5 ? gameState.assets.cat1 : gameState.assets.cat2;
-      
-      // Random position along one of the edges
-      let position;
-      const edge = Math.floor(Math.random() * 4);
-      
-      switch (edge) {
-        case 0: // Top edge
-          position = { 
-            x: Math.random() * (canvasDimensions.width - ghostImage.width), 
-            y: 0 
-          };
-          break;
-        case 1: // Right edge
-          position = { 
-            x: canvasDimensions.width - ghostImage.width, 
-            y: Math.random() * (canvasDimensions.height - ghostImage.height) 
-          };
-          break;
-        case 2: // Bottom edge
-          position = { 
-            x: Math.random() * (canvasDimensions.width - ghostImage.width), 
-            y: canvasDimensions.height - ghostImage.height 
-          };
-          break;
-        case 3: // Left edge
-          position = { 
-            x: 0, 
-            y: Math.random() * (canvasDimensions.height - ghostImage.height) 
-          };
-          break;
-      }
-      
-      // Create and add the new ghost
-      const newGhost = new Ghost(ghostImage, position);
-      newGhost.speed = 150 + (gameState.difficultyLevel - 1) * 20; // Set speed based on difficulty
-      gameState.ghosts.push(newGhost);
-    }
+    // Give a brief grace period when difficulty increases
+    gameState.gracePeriod = 1500; // 1.5 second grace period on difficulty increase
+    
+    // Ensure all entities are in valid positions for the new level
+    validateEntityPositions();
   }
   
   /**
@@ -654,12 +684,12 @@
     gameState.score = 0;
     gameState.difficultyLevel = 1;
     gameState.difficultyTimer = 0;
-    gameState.gracePeriod = 3000; // Reset grace period
+    gameState.gracePeriod = 3000; // 3 seconds grace period
     
-    // Update difficulty display
-    updateDifficultyDisplay();
+    // Clear ghosts
+    gameState.ghosts = [];
     
-    // Hide game over display
+    // Hide game over screen
     if (typeof document !== 'undefined') {
       const gameOverElement = document.getElementById('game-over');
       if (gameOverElement) {
@@ -667,11 +697,140 @@
       }
     }
     
-    // Recreate entities
+    // Re-initialize with current assets for clean slate
     createEntities();
     
-    // Update score display
-    updateScoreDisplay();
+    // Ensure all characters are in valid positions
+    validateEntityPositions();
+    
+    // Start game loop
+    if (!gameState.isRunning) {
+      gameState.isRunning = true;
+      requestAnimationFrame(gameLoop);
+    }
+  }
+  
+  /**
+   * Validate and fix entity positions to ensure they're in valid maze positions
+   */
+  function validateEntityPositions() {
+    if (!gameState.maze) return;
+    
+    const canvasDimensions = CanvasManager.getDimensions();
+    const validPositions = getMazePositions(canvasDimensions);
+    
+    if (validPositions.length === 0) {
+      console.error("No valid positions found for entity validation!");
+      return;
+    }
+    
+    // Check and fix player position if needed
+    if (!isEntityInValidPosition(gameState.player)) {
+      console.log("Fixing invalid player position");
+      const newPos = getRandomPosition(validPositions);
+      gameState.player.x = newPos.x;
+      gameState.player.y = newPos.y;
+      
+      // Remove this position so ghosts don't spawn here
+      validPositions.splice(newPos.index, 1);
+    }
+    
+    // Check and fix ghost positions if needed
+    gameState.ghosts.forEach((ghost, index) => {
+      if (!isEntityInValidPosition(ghost)) {
+        console.log(`Fixing invalid ghost position for ghost ${index}`);
+        
+        if (validPositions.length > 0) {
+          const newPos = getRandomPosition(validPositions);
+          ghost.x = newPos.x;
+          ghost.y = newPos.y;
+          
+          // Remove this position so other ghosts don't spawn here
+          validPositions.splice(newPos.index, 1);
+        } else {
+          // If we ran out of valid positions, hide the ghost off-screen
+          // Better than having it stuck in a wall
+          ghost.x = -100;
+          ghost.y = -100;
+        }
+      }
+    });
+  }
+  
+  /**
+   * Check if an entity is in a valid maze position
+   * @param {Object} entity - Entity to check
+   * @returns {boolean} - True if entity is in a valid position
+   */
+  function isEntityInValidPosition(entity) {
+    if (!gameState.maze) return true;
+    
+    const { grid, cellSize, offsetX, offsetY } = gameState.maze;
+    
+    // Calculate the grid cell for the entity's center
+    const centerX = entity.x + entity.width / 2;
+    const centerY = entity.y + entity.height / 2;
+    
+    const gridCol = Math.floor((centerX - offsetX) / cellSize);
+    const gridRow = Math.floor((centerY - offsetY) / cellSize);
+    
+    // Check if coordinates are within grid bounds
+    if (gridRow < 0 || gridRow >= grid.length || 
+        gridCol < 0 || gridCol >= grid[0].length) {
+      return false;
+    }
+    
+    // Check if the entity is in a path cell (0)
+    return grid[gridRow][gridCol] === 0;
+  }
+  
+  /**
+   * Add a new ghost to the game
+   */
+  function addGhost() {
+    const canvasDimensions = CanvasManager.getDimensions();
+    const ghostImage = Math.random() < 0.5 ? gameState.assets.cat1 : gameState.assets.cat2;
+    
+    // Get valid positions based on the maze
+    const validPositions = getMazePositions(canvasDimensions);
+    
+    if (validPositions.length > 0) {
+      // Find positions that are not too close to the player
+      const playerPos = {
+        x: gameState.player.x,
+        y: gameState.player.y
+      };
+      
+      const safePositions = validPositions.filter(pos => {
+        const distance = Math.sqrt(
+          Math.pow(pos.x - playerPos.x, 2) + 
+          Math.pow(pos.y - playerPos.y, 2)
+        );
+        return distance > 150; // Minimum safe distance from player
+      });
+      
+      // Use safe positions if available, otherwise use any valid position
+      const positionsToUse = safePositions.length > 0 ? safePositions : validPositions;
+      
+      // Get a random valid position
+      const index = Math.floor(Math.random() * positionsToUse.length);
+      const position = positionsToUse[index];
+      
+      // Create and add the new ghost
+      const newGhost = new Ghost(ghostImage, {
+        x: position.x,
+        y: position.y
+      });
+      
+      // Set speed based on current difficulty
+      newGhost.speed = 150 + (gameState.difficultyLevel - 1) * 20;
+      
+      // Add to game
+      gameState.ghosts.push(newGhost);
+      console.log(`Added new ghost at position (${position.x}, ${position.y})`);
+    } else {
+      console.warn("No valid positions found for new ghost");
+    }
   }
   
   // Export functions for use in browser or tests
