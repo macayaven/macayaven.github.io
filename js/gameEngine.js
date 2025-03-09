@@ -209,8 +209,14 @@
     const positions = [];
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
-    // Assuming a standard entity size of 12px
-    const entitySize = 12;
+    // Detect if we're on a mobile device for sizing
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    // Assuming a standard entity size - smaller on mobile
+    const entitySize = isMobile ? 8 : 12;
+    
+    // Log entity size being used
+    console.log(`Using entity size: ${entitySize}, isMobile: ${isMobile}`);
     
     // Use a more strict approach to find valid positions
     // Only use cells that are guaranteed to be safe (away from walls)
@@ -237,9 +243,11 @@
         if (!hasEastWall) safetyScore++;
         if (!hasWestWall) safetyScore++;
         
-        // Only include positions with at least 3 open directions
-        // (meaning it's in a hallway or intersection, not a dead end)
-        if (safetyScore >= 3) {
+        // Only include positions with at least 3 open directions on desktop
+        // For mobile, be more strict and require 4 open directions (intersections only)
+        const minSafetyScore = isMobile ? 4 : 3;
+        
+        if (safetyScore >= minSafetyScore) {
           // Calculate the absolute position that centers the entity in the cell
           const centerX = offsetX + col * cellSize + (cellSize / 2);
           const centerY = offsetY + row * cellSize + (cellSize / 2);

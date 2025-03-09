@@ -29,12 +29,27 @@
       this.faceOpen = assets.faceOpen;
       this.faceClosed = assets.faceClosed;
       
-      // Scale factor to make player fit better in maze
-      this.scaleFactor = 0.1875;
+      // Detect if we're on a mobile device for sizing
+      this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      // Scale factor to make player fit better in maze - smaller on mobile
+      this.scaleFactor = this.isMobile ? 0.12 : 0.1875; // 0.12 for mobile, 0.1875 for desktop
+      
+      // Adjust scale further based on screen size for mobile
+      if (this.isMobile) {
+        const screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        // Make even smaller on tiny screens
+        if (screenWidth < 400) {
+          this.scaleFactor = 0.1;
+        }
+      }
       
       // Set dimensions based on the image size with scaling
       this.width = assets.faceOpen.width * this.scaleFactor;
       this.height = assets.faceOpen.height * this.scaleFactor;
+      
+      // Log the player size for debugging
+      console.log(`Player size set: ${this.width}x${this.height}, isMobile: ${this.isMobile}`);
       
       // Get canvas dimensions
       const canvasDimensions = CanvasManager.getDimensions();
