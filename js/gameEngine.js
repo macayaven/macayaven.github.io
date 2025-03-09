@@ -69,8 +69,19 @@
     if (typeof document !== 'undefined') {
       const restartButton = document.getElementById('restart-button');
       if (restartButton) {
-        restartButton.addEventListener('click', restart);
+        // Remove any existing listeners to prevent duplicates
+        const newRestartButton = restartButton.cloneNode(true);
+        restartButton.parentNode.replaceChild(newRestartButton, restartButton);
+        
+        // Add the click event listener
+        newRestartButton.addEventListener('click', function(event) {
+          console.log("Restart button clicked");
+          event.preventDefault();
+          restart();
+        });
         console.log("Restart button listener added");
+      } else {
+        console.warn("Restart button not found");
       }
     }
     
@@ -448,6 +459,10 @@
     const deltaTime = timestamp - (gameState.lastFrameTime || timestamp);
     gameState.lastFrameTime = timestamp;
     
+    // Normalize deltaTime to ensure consistent speed across devices
+    // This helps prevent faster movement on devices with different framerates or CPUs
+    const normalizedDeltaTime = Math.min(deltaTime, 50); // Cap at 50ms to prevent huge jumps
+    
     // Get player input
     const direction = InputHandler.getDirection();
     
@@ -455,11 +470,11 @@
     const shouldValidatePositions = Math.random() < 0.05; // Randomly validate ~5% of frames
     
     // Update player
-    gameState.player.update(direction, deltaTime);
+    gameState.player.update(direction, normalizedDeltaTime);
     
     // Update ghosts
     gameState.ghosts.forEach(ghost => {
-      ghost.update(deltaTime);
+      ghost.update(normalizedDeltaTime);
       
       // Check for invalid positions after ghost update
       if (shouldValidatePositions && !isEntityInValidPosition(ghost)) {
@@ -490,7 +505,7 @@
     
     // Grace period countdown
     if (gameState.gracePeriod > 0) {
-      gameState.gracePeriod -= deltaTime;
+      gameState.gracePeriod -= normalizedDeltaTime;
       
       if (gameState.gracePeriod <= 0) {
         gameState.gracePeriod = 0;
@@ -506,7 +521,7 @@
     }
     
     // Update difficulty timer
-    gameState.difficultyTimer += deltaTime;
+    gameState.difficultyTimer += normalizedDeltaTime;
     if (gameState.difficultyTimer >= gameState.difficultyInterval) {
       increaseDifficulty();
       gameState.difficultyTimer = 0;
@@ -515,10 +530,10 @@
     // Increment score based on movement and time
     if (direction.x !== 0 || direction.y !== 0) {
       // Player is moving, give more points
-      gameState.score += Math.round(deltaTime / 10) * gameState.difficultyLevel;
+      gameState.score += Math.round(normalizedDeltaTime / 10) * gameState.difficultyLevel;
     } else {
       // Player is stationary, give fewer points
-      gameState.score += Math.round(deltaTime / 50);
+      gameState.score += Math.round(normalizedDeltaTime / 50);
     }
     
     // Update score display
@@ -534,7 +549,7 @@
   }
   
   /**
-   * Increase game difficulty.
+   * Increase game difficulty
    */
   function increaseDifficulty() {
     gameState.difficultyLevel++;
@@ -548,9 +563,12 @@
       addGhost();
     }
     
-    // Increase ghost speed
+    // Increase ghost speed - use baseSpeed for consistent speed increments
     gameState.ghosts.forEach(ghost => {
-      ghost.speed = 150 + (gameState.difficultyLevel - 1) * 20;
+      // Set speed relative to the base speed, which is the same on all devices
+      ghost.speed = ghost.baseSpeed + (gameState.difficultyLevel - 1) * 20;
+      
+      console.log(`Ghost speed updated to ${ghost.speed} at difficulty level ${gameState.difficultyLevel}`);
     });
     
     // Give a brief grace period when difficulty increases
@@ -749,6 +767,8 @@
    * Restart the game.
    */
   function restart() {
+    console.log("Game restart initiated");
+    
     // Reset game state
     gameState.isGameOver = false;
     gameState.score = 0;
@@ -764,20 +784,35 @@
       const gameOverElement = document.getElementById('game-over');
       if (gameOverElement) {
         gameOverElement.classList.add('hidden');
+        console.log("Game over element hidden");
+      } else {
+        console.warn("Game over element not found");
       }
     }
     
     // Re-initialize with current assets for clean slate
     createEntities();
+    console.log("Entities recreated");
     
     // Ensure all characters are in valid positions
     validateEntityPositions();
     
-    // Start game loop
+    // Update displays
+    updateScoreDisplay();
+    updateDifficultyDisplay();
+    
+    // Force a render to ensure everything is drawn initially
+    render();
+    
+    // Restart the game loop if it's not running
     if (!gameState.isRunning) {
       gameState.isRunning = true;
+      gameState.lastFrameTime = performance.now();
       requestAnimationFrame(gameLoop);
+      console.log("Game loop restarted");
     }
+    
+    console.log("Game successfully restarted");
   }
   
   /**
@@ -892,12 +927,12 @@
         y: position.y
       });
       
-      // Set speed based on current difficulty
-      newGhost.speed = 150 + (gameState.difficultyLevel - 1) * 20;
+      // Set speed based on current difficulty - use baseSpeed for consistency
+      newGhost.speed = newGhost.baseSpeed + (gameState.difficultyLevel - 1) * 20;
       
       // Add to game
       gameState.ghosts.push(newGhost);
-      console.log(`Added new ghost at position (${position.x}, ${position.y})`);
+      console.log(`Added new ghost at position (${position.x}, ${position.y}), speed: ${newGhost.speed}`);
     } else {
       console.warn("No valid positions found for new ghost");
     }
