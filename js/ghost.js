@@ -188,6 +188,16 @@
      * @param {CanvasRenderingContext2D} context - The canvas rendering context.
      */
     draw(context) {
+      if (!context) {
+        console.error("No context provided for ghost drawing");
+        return;
+      }
+      
+      // Add debug outline to see where ghost is positioned
+      context.strokeStyle = 'white';
+      context.lineWidth = 2;
+      context.strokeRect(this.x, this.y, this.width, this.height);
+      
       try {
         // Check if the image is available and loaded
         const imageLoadedCorrectly = this.image && this.image.width > 0 && this.image.height > 0;
@@ -204,9 +214,13 @@
           
           // Add small white dot to confirm real image is drawn
           context.fillStyle = 'white';
-          context.fillRect(this.x, this.y, 2, 2);
+          context.fillRect(this.x, this.y, 4, 4);
+          
+          console.log("Drawing ghost with image:", 
+            `dimensions=${this.width}x${this.height}, position=(${Math.round(this.x)},${Math.round(this.y)})`);
         } else {
           // Fall back to drawn representation
+          console.warn("Using fallback drawing for ghost - image not loaded correctly");
           this.drawFallback(context);
         }
       } catch (error) {
@@ -220,55 +234,54 @@
      * @param {CanvasRenderingContext2D} context - The canvas rendering context.
      */
     drawFallback(context) {
-      // Draw the ghost outline for debugging
+      // Draw the ghost outline for visibility
       context.strokeStyle = '#FFFFFF'; // White outline for better visibility
+      context.lineWidth = 2;
       context.strokeRect(this.x, this.y, this.width, this.height);
       
-      // Determine ghost color based on the image reference - use brighter colors for green background
+      // Determine ghost color based on the image reference - use very bright colors for visibility
       let ghostColor = '#FF0000'; // Bright red for default
       if (this.image && this.image.src) {
         const imgSrc = this.image.src.toLowerCase();
         if (imgSrc.includes('cat1')) {
-          ghostColor = '#FFA500'; // Bright orange for cat1
+          ghostColor = '#FF9500'; // Bright orange for cat1
         } else if (imgSrc.includes('cat2')) {
-          ghostColor = '#00FFFF'; // Cyan for cat2
+          ghostColor = '#00FFFF'; // Bright cyan for cat2
         }
       }
       
-      // Draw ghost body with more saturated colors
+      // Draw ghost body with more saturated colors for better visibility
       const radius = this.width / 2;
       const centerX = this.x + radius;
       const centerY = this.y + radius;
       
-      // Draw head (top half circle) with bright color
+      // Draw a solid circular body for visibility
       context.beginPath();
-      context.arc(centerX, centerY - radius/2, radius/2, Math.PI, 0, true);
+      context.arc(centerX, centerY, radius-2, 0, Math.PI * 2);
       context.fillStyle = ghostColor;
       context.fill();
+      context.strokeStyle = '#FFFFFF';
+      context.lineWidth = 1;
+      context.stroke();
       
-      // Draw body sides
-      context.beginPath();
-      context.moveTo(centerX, centerY - radius/2);
-      context.lineTo(centerX + radius/2, centerY);
-      context.lineTo(centerX, centerY + radius/2);
-      context.lineTo(centerX - radius/2, centerY);
-      context.closePath();
-      context.fillStyle = ghostColor;
-      context.fill();
-      
-      // Draw eyes
+      // Draw eyes - make larger for better visibility
       context.fillStyle = 'white';
       context.beginPath();
-      context.arc(centerX - radius/4, centerY - radius/4, 5, 0, Math.PI * 2);
-      context.arc(centerX + radius/4, centerY - radius/4, 5, 0, Math.PI * 2);
+      const eyeRadius = Math.max(2, radius/4);
+      context.arc(centerX - radius/3, centerY - radius/4, eyeRadius, 0, Math.PI * 2);
+      context.arc(centerX + radius/3, centerY - radius/4, eyeRadius, 0, Math.PI * 2);
       context.fill();
       
       // Draw pupils
       context.fillStyle = 'black';
       context.beginPath();
-      context.arc(centerX - radius/4 + 2, centerY - radius/4, 2, 0, Math.PI * 2);
-      context.arc(centerX + radius/4 + 2, centerY - radius/4, 2, 0, Math.PI * 2);
+      const pupilRadius = Math.max(1, eyeRadius/2);
+      context.arc(centerX - radius/3 + 1, centerY - radius/4, pupilRadius, 0, Math.PI * 2);
+      context.arc(centerX + radius/3 + 1, centerY - radius/4, pupilRadius, 0, Math.PI * 2);
       context.fill();
+      
+      console.log("Drew fallback ghost:", 
+        `center=(${Math.round(centerX)},${Math.round(centerY)}), radius=${Math.round(radius)}, color=${ghostColor}`);
     }
     
     /**

@@ -43,40 +43,75 @@
   };
   
   /**
-   * Initialize the game with the provided assets.
-   * @param {Object} assets - The loaded game assets.
+   * Initialize game state and resources.
+   * @param {Object} assets - Game assets (images).
    */
   function initialize(assets) {
+    console.log("Initializing Game Engine...");
+    
     // Save assets
     gameState.assets = assets;
     
     // Initialize canvas
-    gameState.context = CanvasManager.initialize();
+    try {
+      gameState.context = CanvasManager.initialize();
+      console.log("Canvas initialized successfully");
+    } catch (error) {
+      console.error("Failed to initialize canvas:", error);
+      return; // Exit initialization if canvas setup fails
+    }
     
     // Initialize input handler
     InputHandler.initialize();
+    console.log("Input handler initialized");
     
     // Add restart event listener
     if (typeof document !== 'undefined') {
       const restartButton = document.getElementById('restart-button');
       if (restartButton) {
         restartButton.addEventListener('click', restart);
+        console.log("Restart button listener added");
       }
     }
     
-    // Create player and ghosts
+    // Initialize game state
+    gameState.isRunning = true;
+    gameState.isGameOver = false;
+    gameState.lastFrameTime = 0;
+    gameState.score = 0;
+    gameState.difficultyLevel = 1;
+    gameState.difficultyTimer = 0;
+    gameState.difficultyInterval = 30000; // 30 seconds per level
+    gameState.gracePeriod = 3000; // 3 second grace period at start
+    
+    // Initialize maze first
+    const canvasDimensions = CanvasManager.getDimensions();
+    initializeMaze(canvasDimensions);
+    console.log("Maze initialized:", gameState.maze ? "✓" : "✗");
+    
+    // Create entities
     createEntities();
+    console.log("Entities created:", 
+      `Player: ${gameState.player ? "✓" : "✗"}, Ghosts: ${gameState.ghosts?.length || 0}`);
     
     // Validate all entity positions
     validateEntityPositions();
+    console.log("Entity positions validated");
     
-    // Update difficulty display
+    // Update displays
+    updateScoreDisplay();
     updateDifficultyDisplay();
     
-    // Start the game loop
+    // Start game loop
     gameState.isInitialized = true;
-    gameState.lastTimestamp = performance.now();
+    console.log("Game Engine initialized successfully");
+    
+    // Force a render to ensure everything is drawn initially
+    render();
+    
+    // Start the game loop
     requestAnimationFrame(gameLoop);
+    console.log("Game started successfully!");
   }
   
   /**
@@ -521,19 +556,49 @@
    * Render all game entities.
    */
   function render() {
+    if (!gameState.context) {
+      console.error("No context available for rendering");
+      return;
+    }
+    
     // Clear the canvas
     CanvasManager.clear();
     
-    // Draw background
+    // Make sure maze is initialized
+    if (!gameState.maze) {
+      const dimensions = CanvasManager.getDimensions();
+      initializeMaze(dimensions);
+    }
+    
+    // Draw background (which includes maze)
     drawBackground();
     
-    // Draw player
-    gameState.player.draw(gameState.context);
+    // Log render confirmation
+    console.log("Rendering - Maze dimensions:", 
+      gameState.maze ? `${gameState.maze.grid[0].length}x${gameState.maze.grid.length}` : "Maze not initialized");
     
-    // Draw ghosts
-    gameState.ghosts.forEach(ghost => {
-      ghost.draw(gameState.context);
-    });
+    // Draw player if available
+    if (gameState.player) {
+      gameState.player.draw(gameState.context);
+      
+      // Log player position
+      console.log("Player position:", 
+        `(${Math.round(gameState.player.x)}, ${Math.round(gameState.player.y)})`);
+    } else {
+      console.warn("No player to render");
+    }
+    
+    // Draw ghosts if available
+    if (gameState.ghosts && gameState.ghosts.length > 0) {
+      gameState.ghosts.forEach((ghost, index) => {
+        ghost.draw(gameState.context);
+      });
+      
+      // Log ghost count
+      console.log(`Rendered ${gameState.ghosts.length} ghosts`);
+    } else {
+      console.warn("No ghosts to render");
+    }
     
     // Draw grace period indicator
     if (gameState.gracePeriod > 0) {
@@ -553,7 +618,10 @@
    * Draw the game background.
    */
   function drawBackground() {
-    if (!gameState.context || !CanvasManager) return;
+    if (!gameState.context || !CanvasManager) {
+      console.error("Cannot draw background - missing context or CanvasManager");
+      return;
+    }
     
     const canvasDimensions = CanvasManager.getDimensions();
     const ctx = gameState.context;
@@ -561,6 +629,11 @@
     // Draw emerald green background (was black)
     ctx.fillStyle = '#08784e'; // Emerald green color
     ctx.fillRect(0, 0, canvasDimensions.width, canvasDimensions.height);
+    
+    // Ensure maze is initialized
+    if (!gameState.maze) {
+      initializeMaze(canvasDimensions);
+    }
     
     // Draw maze
     drawMaze(ctx, canvasDimensions);
@@ -576,30 +649,39 @@
    */
   function drawMaze(ctx, dimensions) {
     if (!gameState.maze) {
+      console.error("No maze data available for drawing");
       initializeMaze(dimensions);
+    }
+    
+    if (!gameState.maze) {
+      console.error("Failed to initialize maze");
+      return;
     }
     
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
+    // Log maze details
+    console.log("Drawing maze with:", 
+      `cellSize=${Math.round(cellSize)}, offset=(${Math.round(offsetX)},${Math.round(offsetY)})`);
+    
+    // Draw the maze grid
     for (let row = 0; row < grid.length; row++) {
       for (let col = 0; col < grid[row].length; col++) {
+        const x = offsetX + col * cellSize;
+        const y = offsetY + row * cellSize;
+        
         if (grid[row][col] === 1) { // Wall cell
           ctx.fillStyle = '#0000FF'; // Blue
-          ctx.fillRect(
-            offsetX + col * cellSize,
-            offsetY + row * cellSize,
-            cellSize,
-            cellSize
-          );
+          ctx.fillRect(x, y, cellSize, cellSize);
+          
+          // Add outline to walls for better visibility
+          ctx.strokeStyle = '#0000AA';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, cellSize, cellSize);
         } else {
           // Draw path cells with emerald green
           ctx.fillStyle = '#08784e'; // Emerald green
-          ctx.fillRect(
-            offsetX + col * cellSize,
-            offsetY + row * cellSize,
-            cellSize,
-            cellSize
-          );
+          ctx.fillRect(x, y, cellSize, cellSize);
         }
       }
     }
