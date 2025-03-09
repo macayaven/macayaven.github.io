@@ -124,9 +124,6 @@
     const deltaTime = timestamp - gameState.lastTimestamp;
     gameState.lastTimestamp = timestamp;
     
-    // Clear the canvas
-    CanvasManager.clear();
-    
     // If game is not over, update game state
     if (!gameState.isGameOver) {
       // Get current input direction
@@ -238,6 +235,12 @@
    * Render all game entities.
    */
   function render() {
+    // Clear the canvas
+    CanvasManager.clear();
+    
+    // Draw background
+    drawBackground();
+    
     // Draw player
     gameState.player.draw(gameState.context);
     
@@ -253,6 +256,46 @@
         gameOverElement.classList.remove('hidden');
       }
     }
+  }
+  
+  /**
+   * Draw the game background.
+   */
+  function drawBackground() {
+    if (!gameState.context || !CanvasManager) return;
+    
+    const canvasDimensions = CanvasManager.getDimensions();
+    const ctx = gameState.context;
+    
+    // Draw darker background
+    ctx.fillStyle = '#121212';
+    ctx.fillRect(0, 0, canvasDimensions.width, canvasDimensions.height);
+    
+    // Draw grid lines
+    ctx.strokeStyle = '#222222';
+    ctx.lineWidth = 1;
+    
+    // Draw horizontal grid lines
+    const gridSize = 40;
+    for (let y = 0; y < canvasDimensions.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvasDimensions.width, y);
+      ctx.stroke();
+    }
+    
+    // Draw vertical grid lines
+    for (let x = 0; x < canvasDimensions.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvasDimensions.height);
+      ctx.stroke();
+    }
+    
+    // Draw border
+    ctx.strokeStyle = '#3333FF';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, canvasDimensions.width - 4, canvasDimensions.height - 4);
   }
   
   /**

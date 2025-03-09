@@ -69,12 +69,16 @@
   /**
    * Create an Image object from an SVG data URL.
    * @param {string} svgDataURL - The SVG data URL.
-   * @returns {Image} - The created Image object.
+   * @returns {Promise<Image>} - A promise that resolves with the created Image object.
    */
   function createImageFromSVG(svgDataURL) {
     const img = new Image();
     img.width = 64;
     img.height = 64;
+    
+    // Add fallback dimensions in case the image doesn't load correctly
+    img._fallbackWidth = 64;
+    img._fallbackHeight = 64;
     
     // Ensure the image has time to load
     return new Promise((resolve) => {
@@ -90,7 +94,20 @@
       };
       
       // Set the source after attaching event handlers
-      img.src = svgDataURL;
+      try {
+        img.src = svgDataURL;
+      } catch (err) {
+        console.error('Error setting SVG source:', err);
+        resolve(img);
+      }
+      
+      // Set a timeout to resolve anyway after 1 second
+      setTimeout(() => {
+        if (!img.complete) {
+          console.warn('SVG image load timed out - using fallback');
+          resolve(img);
+        }
+      }, 1000);
     });
   }
   
