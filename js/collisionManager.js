@@ -7,18 +7,17 @@
 (function(exports) {
   /**
    * Check if two rectangular objects are colliding.
-   * @param {Object} object1 - First object with x, y, width, height properties.
-   * @param {Object} object2 - Second object with x, y, width, height properties.
+   * @param {Object} bounds1 - First object bounds with left, right, top, bottom properties.
+   * @param {Object} bounds2 - Second object bounds with left, right, top, bottom properties.
    * @returns {boolean} True if the objects are colliding, false otherwise.
    */
-  function checkCollision(object1, object2) {
-    // Use Axis-Aligned Bounding Box (AABB) collision detection
-    // We consider objects touching at edges as colliding
+  function checkCollision(bounds1, bounds2) {
+    // Use Axis-Aligned Bounding Box (AABB) collision detection with new bounds format
     return (
-      object1.x <= object2.x + object2.width &&
-      object1.x + object1.width >= object2.x &&
-      object1.y <= object2.y + object2.height &&
-      object1.y + object1.height >= object2.y
+      bounds1.left <= bounds2.right &&
+      bounds1.right >= bounds2.left &&
+      bounds1.top <= bounds2.bottom &&
+      bounds1.bottom >= bounds2.top
     );
   }
   

@@ -158,12 +158,15 @@
     const positions = [];
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
+    // Assuming a standard entity size of 32px (half of the previous 64px)
+    const entitySize = 32;
+    
     for (let row = 0; row < grid.length; row++) {
       for (let col = 0; col < grid[row].length; col++) {
         if (grid[row][col] === 0) { // Path cell
           positions.push({
-            x: offsetX + col * cellSize + (cellSize - 64) / 2, // Center entity in cell
-            y: offsetY + row * cellSize + (cellSize - 64) / 2,
+            x: offsetX + col * cellSize + (cellSize - entitySize) / 2, // Center entity in cell
+            y: offsetY + row * cellSize + (cellSize - entitySize) / 2,
             row: row,
             col: col
           });

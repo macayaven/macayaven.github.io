@@ -29,9 +29,12 @@
       this.faceOpen = assets.faceOpen;
       this.faceClosed = assets.faceClosed;
       
-      // Set dimensions based on the image size
-      this.width = assets.faceOpen.width;
-      this.height = assets.faceOpen.height;
+      // Scale factor to make player fit better in maze
+      this.scaleFactor = 0.5;
+      
+      // Set dimensions based on the image size with scaling
+      this.width = assets.faceOpen.width * this.scaleFactor;
+      this.height = assets.faceOpen.height * this.scaleFactor;
       
       // Get canvas dimensions
       const canvasDimensions = CanvasManager.getDimensions();
@@ -119,20 +122,24 @@
         const imageLoadedCorrectly = image && image.width > 0 && image.height > 0;
         
         if (imageLoadedCorrectly) {
-          // Draw the actual image
-          context.drawImage(image, this.x, this.y, this.width, this.height);
+          // Draw the actual image with scaling
+          context.drawImage(
+            image, 
+            this.x, 
+            this.y, 
+            this.width, 
+            this.height
+          );
           
-          // Add a small dot in the corner to confirm image rendering
+          // Add small white dot to confirm real image is drawn
           context.fillStyle = 'white';
-          context.beginPath();
-          context.arc(this.x + 5, this.y + 5, 2, 0, Math.PI * 2);
-          context.fill();
+          context.fillRect(this.x, this.y, 2, 2);
         } else {
-          // Draw fallback
+          // Fall back to drawn representation
           this.drawFallback(context);
         }
-      } catch (e) {
-        console.error('Error drawing player:', e);
+      } catch (error) {
+        console.error('Error drawing player:', error);
         this.drawFallback(context);
       }
     }
@@ -142,6 +149,12 @@
      * @param {CanvasRenderingContext2D} context - The canvas rendering context.
      */
     drawFallback(context) {
+      // Draw a representation of the player based on direction and mouth state
+      // Size based on the scaled width
+      const radius = this.width / 2;
+      const centerX = this.x + radius;
+      const centerY = this.y + radius;
+      
       // Draw a colored rectangle for debugging
       context.strokeStyle = 'yellow';
       context.lineWidth = 2;
@@ -150,7 +163,7 @@
       // Draw a solid circle for the player
       context.fillStyle = 'yellow';
       context.beginPath();
-      context.arc(this.x + this.width/2, this.y + this.height/2, this.width/2 - 5, 0, Math.PI * 2);
+      context.arc(centerX, centerY, radius - 5, 0, Math.PI * 2);
       context.fill();
       
       // Draw eyes
@@ -163,7 +176,7 @@
       // Draw mouth based on state
       context.beginPath();
       if (this.mouthOpen) {
-        context.arc(this.x + this.width/2, this.y + this.height/2, this.width/4, 0.2 * Math.PI, 0.8 * Math.PI);
+        context.arc(centerX, centerY, radius/4, 0.2 * Math.PI, 0.8 * Math.PI);
       } else {
         context.moveTo(this.x + this.width/3, this.y + 2*this.height/3);
         context.lineTo(this.x + 2*this.width/3, this.y + 2*this.height/3);
@@ -177,11 +190,13 @@
      * @returns {Object} An object with x, y, width, and height properties.
      */
     getBounds() {
+      // Add a slight reduction to make the hitbox a bit smaller than visual size
+      const hitboxReduction = 4;
       return {
-        x: this.x,
-        y: this.y,
-        width: this.width,
-        height: this.height
+        left: this.x + hitboxReduction,
+        right: this.x + this.width - hitboxReduction,
+        top: this.y + hitboxReduction,
+        bottom: this.y + this.height - hitboxReduction
       };
     }
   }
