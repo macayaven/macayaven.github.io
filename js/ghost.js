@@ -13,14 +13,7 @@
     CanvasManager = window.CanvasManager;
   } else {
     // Node.js (Jest) environment
-    try {
-      CanvasManager = require('./canvasManager');
-    } catch (e) {
-      // Default empty implementation for testing
-      CanvasManager = {
-        getDimensions: () => ({ width: 800, height: 600 })
-      };
-    }
+    CanvasManager = require('./canvasManager');
   }
   
   /**
@@ -143,20 +136,10 @@
     }
   }
   
-  /**
-   * Set a custom CanvasManager for testing purposes.
-   * @param {Object} customCanvasManager - A mock CanvasManager object.
-   */
-  function setCanvasManager(customCanvasManager) {
-    CanvasManager = customCanvasManager;
-  }
-  
   // Export the Ghost class
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Ghost;
-    module.exports.setCanvasManager = setCanvasManager;
   } else {
     window.Ghost = Ghost;
-    window.Ghost.setCanvasManager = setCanvasManager;
   }
 })(); 
