@@ -158,18 +158,39 @@
     const positions = [];
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
-    // Assuming a standard entity size of 32px (half of the previous 64px)
-    const entitySize = 32;
+    // Assuming a standard entity size of 24px (reducing from previous 32px)
+    const entitySize = 24;
     
     for (let row = 0; row < grid.length; row++) {
       for (let col = 0; col < grid[row].length; col++) {
         if (grid[row][col] === 0) { // Path cell
-          positions.push({
-            x: offsetX + col * cellSize + (cellSize - entitySize) / 2, // Center entity in cell
-            y: offsetY + row * cellSize + (cellSize - entitySize) / 2,
-            row: row,
-            col: col
-          });
+          // Perform additional validation to ensure position is not too close to walls
+          let isInvalidPosition = false;
+          
+          // Check surrounding cells to avoid positions too close to walls
+          for (let r = Math.max(0, row - 1); r <= Math.min(grid.length - 1, row + 1); r++) {
+            for (let c = Math.max(0, col - 1); c <= Math.min(grid[row].length - 1, col + 1); c++) {
+              // Skip diagonal and own cell
+              if ((r === row && c === col) || (r !== row && c !== col)) continue;
+              
+              // Skip if surrounding cell is a wall
+              if (grid[r][c] === 1) {
+                // If the wall is too close, consider the position invalid
+                isInvalidPosition = true;
+                break;
+              }
+            }
+            if (isInvalidPosition) break;
+          }
+          
+          if (!isInvalidPosition) {
+            positions.push({
+              x: offsetX + col * cellSize + (cellSize - entitySize) / 2, // Center entity in cell
+              y: offsetY + row * cellSize + (cellSize - entitySize) / 2,
+              row: row,
+              col: col
+            });
+          }
         }
       }
     }
@@ -193,6 +214,44 @@
   }
   
   /**
+   * Initialize the maze for the game.
+   * @param {Object} dimensions - Canvas dimensions.
+   */
+  function initializeMaze(dimensions) {
+    // Maze configuration
+    const cellSize = Math.min(dimensions.width, dimensions.height) / 15;
+    
+    // Simple maze layout - 1 represents walls, 0 represents paths
+    const maze = [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
+      [1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ];
+    
+    // Calculate offset to center the maze
+    const offsetX = (dimensions.width - (maze[0].length * cellSize)) / 2;
+    const offsetY = (dimensions.height - (maze.length * cellSize)) / 2;
+    
+    // Add to game state so other components can access it
+    gameState.maze = {
+      grid: maze,
+      cellSize: cellSize,
+      offsetX: offsetX,
+      offsetY: offsetY
+    };
+  }
+  
+  /**
    * Check if a move would result in a wall collision
    * @param {Object} position - Current position {x, y}
    * @param {Object} direction - Movement direction {x, y}
@@ -204,21 +263,76 @@
     
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
-    // Calculate new position
+    // Calculate potential new position with the movement
     const newX = position.x + direction.x * distance;
     const newY = position.y + direction.y * distance;
     
-    // Convert position to grid coordinates
-    const gridCol = Math.floor((newX - offsetX + 32) / cellSize);
-    const gridRow = Math.floor((newY - offsetY + 32) / cellSize);
+    // Calculate the current cell position
+    const currentCellX = Math.floor((position.x - offsetX) / cellSize);
+    const currentCellY = Math.floor((position.y - offsetY) / cellSize);
     
-    // Check if new position is within grid bounds
-    if (gridRow < 0 || gridRow >= grid.length || gridCol < 0 || gridCol >= grid[0].length) {
-      return false;
+    // Calculate potential new cell position
+    const newCellX = Math.floor((newX - offsetX) / cellSize);
+    const newCellY = Math.floor((newY - offsetY) / cellSize);
+    
+    // Add a small buffer from the wall edges (20% of cell size)
+    const buffer = cellSize * 0.2;
+    
+    // Check for walls in potential movement path - more careful checking
+    if (direction.x !== 0) { // Horizontal movement
+      // Check cells in the moving direction for walls
+      if (direction.x > 0) { // Moving right
+        // Check if the right side of player would hit a wall
+        const rightEdge = newX + (gameState.player.width / 2) - buffer;
+        const rightCellX = Math.floor((rightEdge - offsetX) / cellSize);
+        if (rightCellX >= 0 && rightCellX < grid[0].length && 
+            currentCellY >= 0 && currentCellY < grid.length &&
+            grid[currentCellY][rightCellX] === 1) {
+          return false;
+        }
+      } else { // Moving left
+        // Check if the left side of player would hit a wall
+        const leftEdge = newX - (gameState.player.width / 2) + buffer;
+        const leftCellX = Math.floor((leftEdge - offsetX) / cellSize);
+        if (leftCellX >= 0 && leftCellX < grid[0].length && 
+            currentCellY >= 0 && currentCellY < grid.length &&
+            grid[currentCellY][leftCellX] === 1) {
+          return false;
+        }
+      }
     }
     
-    // Check if new position is a wall
-    return grid[gridRow][gridCol] !== 1;
+    if (direction.y !== 0) { // Vertical movement
+      // Check cells in the moving direction for walls
+      if (direction.y > 0) { // Moving down
+        // Check if the bottom side of player would hit a wall
+        const bottomEdge = newY + (gameState.player.height / 2) - buffer;
+        const bottomCellY = Math.floor((bottomEdge - offsetY) / cellSize);
+        if (currentCellX >= 0 && currentCellX < grid[0].length &&
+            bottomCellY >= 0 && bottomCellY < grid.length &&
+            grid[bottomCellY][currentCellX] === 1) {
+          return false;
+        }
+      } else { // Moving up
+        // Check if the top side of player would hit a wall
+        const topEdge = newY - (gameState.player.height / 2) + buffer;
+        const topCellY = Math.floor((topEdge - offsetY) / cellSize);
+        if (currentCellX >= 0 && currentCellX < grid[0].length &&
+            topCellY >= 0 && topCellY < grid.length &&
+            grid[topCellY][currentCellX] === 1) {
+          return false;
+        }
+      }
+    }
+    
+    // Ensure the new position is still within bounds of the canvas
+    const canvasDimensions = CanvasManager.getDimensions();
+    return (
+      newX >= 0 &&
+      newX + gameState.player.width <= canvasDimensions.width &&
+      newY >= 0 &&
+      newY + gameState.player.height <= canvasDimensions.height
+    );
   }
   
   /**
@@ -386,8 +500,8 @@
     const canvasDimensions = CanvasManager.getDimensions();
     const ctx = gameState.context;
     
-    // Draw darker background
-    ctx.fillStyle = '#000000';
+    // Draw emerald green background (was black)
+    ctx.fillStyle = '#08784e'; // Emerald green color
     ctx.fillRect(0, 0, canvasDimensions.width, canvasDimensions.height);
     
     // Draw maze
@@ -403,55 +517,34 @@
    * Draw the maze structure
    */
   function drawMaze(ctx, dimensions) {
-    // Maze configuration
-    const cellSize = Math.min(dimensions.width, dimensions.height) / 15;
-    const wallColor = '#2121AA';
-    ctx.fillStyle = wallColor;
-    ctx.strokeStyle = '#3333FF';
-    ctx.lineWidth = 2;
+    if (!gameState.maze) {
+      initializeMaze(dimensions);
+    }
     
-    // Simple maze layout - 1 represents walls, 0 represents paths
-    const maze = [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-      [1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
-      [1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
-      [1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-      [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    ];
+    const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
-    // Calculate offset to center the maze
-    const offsetX = (dimensions.width - (maze[0].length * cellSize)) / 2;
-    const offsetY = (dimensions.height - (maze.length * cellSize)) / 2;
-    
-    // Draw the maze
-    for (let row = 0; row < maze.length; row++) {
-      for (let col = 0; col < maze[row].length; col++) {
-        if (maze[row][col] === 1) {
-          const x = offsetX + col * cellSize;
-          const y = offsetY + row * cellSize;
-          
-          // Draw maze cell
-          ctx.fillRect(x, y, cellSize, cellSize);
-          ctx.strokeRect(x, y, cellSize, cellSize);
+    for (let row = 0; row < grid.length; row++) {
+      for (let col = 0; col < grid[row].length; col++) {
+        if (grid[row][col] === 1) { // Wall cell
+          ctx.fillStyle = '#0000FF'; // Blue
+          ctx.fillRect(
+            offsetX + col * cellSize,
+            offsetY + row * cellSize,
+            cellSize,
+            cellSize
+          );
+        } else {
+          // Draw path cells with emerald green
+          ctx.fillStyle = '#08784e'; // Emerald green
+          ctx.fillRect(
+            offsetX + col * cellSize,
+            offsetY + row * cellSize,
+            cellSize,
+            cellSize
+          );
         }
       }
     }
-    
-    // Add to game state so other components can access it
-    gameState.maze = {
-      grid: maze,
-      cellSize: cellSize,
-      offsetX: offsetX,
-      offsetY: offsetY
-    };
   }
   
   /**
