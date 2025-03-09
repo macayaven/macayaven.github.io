@@ -68,20 +68,34 @@
       const newX = this.x + dx;
       const newY = this.y + dy;
       
+      // Track if we can move in the current direction
+      let canMove = true;
+      
       // Try to use GameEngine's isValidMove if available (for maze walls)
       if (typeof window !== 'undefined' && window.GameEngine && window.GameEngine.isValidMove) {
-        const isValid = window.GameEngine.isValidMove(
+        canMove = window.GameEngine.isValidMove(
           {x: this.x, y: this.y}, 
           {x: this.direction.x, y: this.direction.y}, 
           this.speed * (deltaTime / 1000)
         );
         
-        if (isValid) {
+        if (canMove) {
           // Move if valid
           this.x = newX;
           this.y = newY;
-        } else {
-          // Change direction immediately if we hit a wall
+          
+          // Verify position after movement
+          if (window.GameEngine.isEntityInValidPosition && 
+              !window.GameEngine.isEntityInValidPosition(this)) {
+            // If we somehow ended up in an invalid position, revert the move
+            this.x -= dx;
+            this.y -= dy;
+            canMove = false;
+          }
+        }
+        
+        if (!canMove) {
+          // Change direction immediately if we hit a wall or invalid position
           this.chooseNewDirection();
           this.directionTimer = 0;
         }
@@ -110,8 +124,12 @@
         }
       }
       
-      // Change direction periodically (2-4 seconds) if we haven't changed due to collision
-      if (this.directionTimer > 2000 + Math.random() * 2000) {
+      // Change direction periodically or if we're not moving
+      const shouldChangeDirection = 
+        this.directionTimer > 2000 + Math.random() * 2000 || // Time-based change
+        (Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01);        // Not moving
+        
+      if (shouldChangeDirection) {
         this.chooseNewDirection();
         this.directionTimer = 0;
       }
