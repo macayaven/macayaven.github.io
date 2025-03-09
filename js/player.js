@@ -114,6 +114,16 @@
      * @param {CanvasRenderingContext2D} context - The canvas rendering context.
      */
     draw(context) {
+      if (!context) {
+        console.error("No context provided for player drawing");
+        return;
+      }
+
+      // Add debug outline to see where player is positioned
+      context.strokeStyle = 'white';
+      context.lineWidth = 2;
+      context.strokeRect(this.x, this.y, this.width, this.height);
+      
       // Draw the appropriate image based on mouth state
       const image = this.mouthOpen ? this.faceOpen : this.faceClosed;
       
@@ -133,9 +143,13 @@
           
           // Add small white dot to confirm real image is drawn
           context.fillStyle = 'white';
-          context.fillRect(this.x, this.y, 2, 2);
+          context.fillRect(this.x, this.y, 4, 4);
+          
+          console.log("Drawing player with image:", 
+            `dimensions=${this.width}x${this.height}, position=(${Math.round(this.x)},${Math.round(this.y)})`);
         } else {
           // Fall back to drawn representation
+          console.warn("Using fallback drawing for player - image not loaded correctly");
           this.drawFallback(context);
         }
       } catch (error) {
@@ -155,23 +169,27 @@
       const centerX = this.x + radius;
       const centerY = this.y + radius;
       
-      // Draw a colored rectangle for debugging
+      // Draw a colored rectangle for visibility
       context.strokeStyle = 'white';
       context.lineWidth = 2;
       context.strokeRect(this.x, this.y, this.width, this.height);
       
-      // Draw the player body - brighter yellow for visibility on green
+      // Draw the player body - very bright yellow for maximum visibility
       context.fillStyle = '#FFFF00'; // Bright yellow
       context.beginPath();
-      context.arc(centerX, centerY, radius - 5, 0, Math.PI * 2);
+      context.arc(centerX, centerY, radius - 2, 0, Math.PI * 2);
       context.fill();
+      context.strokeStyle = '#FFFFFF';
+      context.lineWidth = 1;
+      context.stroke();
       
-      // Draw mouth based on animation state
+      // Draw mouth based on animation state - make it larger and more visible
       context.fillStyle = '#000000';
       context.beginPath();
       if (this.mouthOpen) {
         // Draw open mouth - larger angle for visibility
-        context.arc(centerX, centerY, radius/2, 0.2 * Math.PI, 0.8 * Math.PI);
+        context.moveTo(centerX, centerY);
+        context.arc(centerX, centerY, radius-1, 0.2 * Math.PI, 0.8 * Math.PI);
         context.lineTo(centerX, centerY);
         context.closePath();
       } else {
@@ -180,6 +198,9 @@
         context.lineTo(this.x + 2*this.width/3, this.y + 2*this.height/3);
       }
       context.fill();
+      
+      console.log("Drew fallback player:", 
+        `center=(${Math.round(centerX)},${Math.round(centerY)}), radius=${Math.round(radius)}`);
     }
     
     /**
