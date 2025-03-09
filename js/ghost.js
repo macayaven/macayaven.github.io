@@ -55,29 +55,47 @@
      */
     update(deltaTime) {
       // Calculate movement delta
-      const dx = this.direction.x * this.speed * (deltaTime / 1000);
-      const dy = this.direction.y * this.speed * (deltaTime / 1000);
+      const distance = this.speed * (deltaTime / 1000);
+      let dx = this.direction.x * distance;
+      let dy = this.direction.y * distance;
       
-      // Update position
-      this.x += dx;
-      this.y += dy;
+      // Check for maze wall collisions if available
+      let hitBoundary = false;
       
-      // Check canvas boundaries
-      const canvasDimensions = CanvasManager.getDimensions();
-      const hitBoundary = 
-        this.x <= 0 || 
-        this.x >= canvasDimensions.width - this.width ||
-        this.y <= 0 || 
-        this.y >= canvasDimensions.height - this.height;
+      if (typeof window !== 'undefined' && window.GameEngine && window.GameEngine.isValidMove) {
+        // Use GameEngine's isValidMove function
+        if (!window.GameEngine.isValidMove(
+          { x: this.x, y: this.y },
+          this.direction,
+          distance
+        )) {
+          hitBoundary = true;
+          dx = 0;
+          dy = 0;
+        }
+      } else {
+        // Fallback to original boundary detection
+        const canvasDimensions = CanvasManager.getDimensions();
+        hitBoundary = 
+          this.x + dx <= 0 || 
+          this.x + dx >= canvasDimensions.width - this.width ||
+          this.y + dy <= 0 || 
+          this.y + dy >= canvasDimensions.height - this.height;
+      }
       
-      // Keep ghost within canvas bounds
-      this.x = Math.max(0, Math.min(this.x, canvasDimensions.width - this.width));
-      this.y = Math.max(0, Math.min(this.y, canvasDimensions.height - this.height));
-      
-      // If hit boundary, change direction immediately
-      if (hitBoundary) {
+      // Update position if no collision
+      if (!hitBoundary) {
+        this.x += dx;
+        this.y += dy;
+      } else {
+        // If hit boundary, change direction immediately
         this.chooseNewDirection();
       }
+      
+      // Keep ghost within canvas bounds
+      const canvasDimensions = CanvasManager.getDimensions();
+      this.x = Math.max(0, Math.min(this.x, canvasDimensions.width - this.width));
+      this.y = Math.max(0, Math.min(this.y, canvasDimensions.height - this.height));
       
       // Update direction timer
       this.directionTimer += deltaTime;
@@ -120,57 +138,69 @@
      */
     draw(context) {
       try {
-        // Draw the ghost image
-        context.drawImage(this.image, this.x, this.y, this.width, this.height);
+        // Check if the image is available and loaded properly
+        const imageLoadedCorrectly = this.image && this.image.width > 0 && this.image.height > 0;
         
-        // Draw a colored outline around the ghost for debugging
-        context.strokeStyle = 'red';
-        context.lineWidth = 2;
-        context.strokeRect(this.x, this.y, this.width, this.height);
-        
-        // Draw a ghost shape as a fallback
-        const ghostColor = this.image === window.cat1 ? '#ff6666' : '#6666ff';
-        context.fillStyle = ghostColor;
-        
-        // Draw ghost body
-        context.beginPath();
-        // Head (top half circle)
-        context.arc(this.x + this.width/2, this.y + this.height/3, this.width/3, Math.PI, 0, true);
-        // Body sides
-        context.lineTo(this.x + this.width, this.y + this.height - this.height/4);
-        // Bottom zigzag
-        context.lineTo(this.x + this.width*0.75, this.y + this.height - this.height/3);
-        context.lineTo(this.x + this.width/2, this.y + this.height);
-        context.lineTo(this.x + this.width/4, this.y + this.height - this.height/3);
-        context.lineTo(this.x, this.y + this.height - this.height/4);
-        context.closePath();
-        context.fill();
-        
-        // Draw eyes
-        context.fillStyle = 'white';
-        context.beginPath();
-        context.arc(this.x + this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
-        context.arc(this.x + 2*this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
-        context.fill();
-        
-        // Draw pupils
-        context.fillStyle = 'black';
-        context.beginPath();
-        context.arc(this.x + this.width/3 + 2, this.y + this.height/3, 2, 0, Math.PI * 2);
-        context.arc(this.x + 2*this.width/3 + 2, this.y + this.height/3, 2, 0, Math.PI * 2);
-        context.fill();
+        if (imageLoadedCorrectly) {
+          // Draw the actual cat image
+          context.drawImage(this.image, this.x, this.y, this.width, this.height);
+          
+          // Add a small dot in the corner to confirm image rendering
+          context.fillStyle = 'white';
+          context.beginPath();
+          context.arc(this.x + 5, this.y + 5, 2, 0, Math.PI * 2);
+          context.fill();
+        } else {
+          // Draw fallback
+          this.drawFallback(context);
+        }
       } catch (e) {
         console.error('Error drawing ghost:', e);
-        
-        // Super simple fallback
-        context.fillStyle = 'red';
-        context.fillRect(this.x, this.y, this.width, this.height);
-        
-        // Add text to indicate this is a ghost
-        context.fillStyle = 'white';
-        context.font = '12px Arial';
-        context.fillText('GHOST', this.x + 5, this.y + this.height/2);
+        this.drawFallback(context);
       }
+    }
+    
+    /**
+     * Draw a fallback representation of the ghost if the image fails to load.
+     * @param {CanvasRenderingContext2D} context - The canvas rendering context.
+     */
+    drawFallback(context) {
+      // Draw outline for debugging
+      context.strokeStyle = 'red';
+      context.lineWidth = 2;
+      context.strokeRect(this.x, this.y, this.width, this.height);
+      
+      // Determine color based on image reference (this is a guess, adjust as needed)
+      const ghostColor = this.image === window.cat1 ? '#ff6666' : '#6666ff';
+      context.fillStyle = ghostColor;
+      
+      // Draw ghost body
+      context.beginPath();
+      // Head (top half circle)
+      context.arc(this.x + this.width/2, this.y + this.height/3, this.width/3, Math.PI, 0, true);
+      // Body sides
+      context.lineTo(this.x + this.width, this.y + this.height - this.height/4);
+      // Bottom zigzag
+      context.lineTo(this.x + this.width*0.75, this.y + this.height - this.height/3);
+      context.lineTo(this.x + this.width/2, this.y + this.height);
+      context.lineTo(this.x + this.width/4, this.y + this.height - this.height/3);
+      context.lineTo(this.x, this.y + this.height - this.height/4);
+      context.closePath();
+      context.fill();
+      
+      // Draw eyes
+      context.fillStyle = 'white';
+      context.beginPath();
+      context.arc(this.x + this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+      context.arc(this.x + 2*this.width/3, this.y + this.height/3, 5, 0, Math.PI * 2);
+      context.fill();
+      
+      // Draw pupils
+      context.fillStyle = 'black';
+      context.beginPath();
+      context.arc(this.x + this.width/3 + 2, this.y + this.height/3, 2, 0, Math.PI * 2);
+      context.arc(this.x + 2*this.width/3 + 2, this.y + this.height/3, 2, 0, Math.PI * 2);
+      context.fill();
     }
     
     /**

@@ -38,7 +38,8 @@
     difficultyLevel: 1,
     difficultyTimer: 0,
     difficultyInterval: 10000, // Increase difficulty every 10 seconds
-    gracePeriod: 1500 // 1.5 second grace period before collision detection starts
+    gracePeriod: 3000, // 3 second grace period before collision detection starts
+    maze: null
   };
   
   /**
@@ -87,32 +88,134 @@
     
     const canvasDimensions = CanvasManager.getDimensions();
     
-    // Make sure ghosts are placed at a safe distance from the player
-    const safeDistance = 120; // Minimum distance between player and ghosts
+    // Calculate safe positions based on the maze
+    // The maze is drawn centered, so we need to place entities in valid maze positions
+    const mazePositions = getMazePositions(canvasDimensions);
     
-    // Ghost 1 at top left - further away from center
-    gameState.ghosts.push(new Ghost(gameState.assets.cat1, {
-      x: Math.max(20, safeDistance),
-      y: Math.max(20, safeDistance)
-    }));
+    if (mazePositions.length > 0) {
+      // Place player at a random valid position
+      const playerPos = getRandomPosition(mazePositions);
+      gameState.player.x = playerPos.x;
+      gameState.player.y = playerPos.y;
+      
+      // Mark the player position as used so ghosts don't spawn there
+      mazePositions.splice(playerPos.index, 1);
+      
+      // Place ghosts at random valid positions
+      for (let i = 0; i < 4; i++) {
+        if (mazePositions.length === 0) break;
+        
+        const ghostPos = getRandomPosition(mazePositions);
+        const ghostImage = i % 2 === 0 ? gameState.assets.cat1 : gameState.assets.cat2;
+        
+        gameState.ghosts.push(new Ghost(ghostImage, {
+          x: ghostPos.x,
+          y: ghostPos.y
+        }));
+        
+        // Mark the position as used
+        mazePositions.splice(ghostPos.index, 1);
+      }
+    } else {
+      // Fallback to original positioning if maze isn't available
+      // Make sure ghosts are placed at a safe distance from the player
+      const safeDistance = 120; // Minimum distance between player and ghosts
+      
+      // Ghost 1 at top left - further away from center
+      gameState.ghosts.push(new Ghost(gameState.assets.cat1, {
+        x: Math.max(20, safeDistance),
+        y: Math.max(20, safeDistance)
+      }));
+      
+      // Ghost 2 at bottom right - further away from center
+      gameState.ghosts.push(new Ghost(gameState.assets.cat2, {
+        x: canvasDimensions.width - Math.max(60, safeDistance) - gameState.assets.cat2.width,
+        y: canvasDimensions.height - Math.max(60, safeDistance) - gameState.assets.cat2.height
+      }));
+      
+      // Ghost 3 at top right - further away from center
+      gameState.ghosts.push(new Ghost(gameState.assets.cat1, {
+        x: canvasDimensions.width - Math.max(60, safeDistance) - gameState.assets.cat1.width,
+        y: Math.max(20, safeDistance)
+      }));
+      
+      // Ghost 4 at bottom left - further away from center
+      gameState.ghosts.push(new Ghost(gameState.assets.cat2, {
+        x: Math.max(20, safeDistance),
+        y: canvasDimensions.height - Math.max(60, safeDistance) - gameState.assets.cat2.height
+      }));
+    }
+  }
+  
+  /**
+   * Get a list of valid positions in the maze (path cells)
+   * @param {Object} dimensions - Canvas dimensions
+   * @returns {Array} Array of {x, y} positions
+   */
+  function getMazePositions(dimensions) {
+    if (!gameState.maze) return [];
     
-    // Ghost 2 at bottom right - further away from center
-    gameState.ghosts.push(new Ghost(gameState.assets.cat2, {
-      x: canvasDimensions.width - Math.max(60, safeDistance) - gameState.assets.cat2.width,
-      y: canvasDimensions.height - Math.max(60, safeDistance) - gameState.assets.cat2.height
-    }));
+    const positions = [];
+    const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
-    // Ghost 3 at top right - further away from center
-    gameState.ghosts.push(new Ghost(gameState.assets.cat1, {
-      x: canvasDimensions.width - Math.max(60, safeDistance) - gameState.assets.cat1.width,
-      y: Math.max(20, safeDistance)
-    }));
+    for (let row = 0; row < grid.length; row++) {
+      for (let col = 0; col < grid[row].length; col++) {
+        if (grid[row][col] === 0) { // Path cell
+          positions.push({
+            x: offsetX + col * cellSize + (cellSize - 64) / 2, // Center entity in cell
+            y: offsetY + row * cellSize + (cellSize - 64) / 2,
+            row: row,
+            col: col
+          });
+        }
+      }
+    }
     
-    // Ghost 4 at bottom left - further away from center
-    gameState.ghosts.push(new Ghost(gameState.assets.cat2, {
-      x: Math.max(20, safeDistance),
-      y: canvasDimensions.height - Math.max(60, safeDistance) - gameState.assets.cat2.height
-    }));
+    return positions;
+  }
+  
+  /**
+   * Get a random position from the available maze positions
+   * @param {Array} positions - Array of available positions
+   * @returns {Object} - Selected position with index
+   */
+  function getRandomPosition(positions) {
+    const index = Math.floor(Math.random() * positions.length);
+    const position = positions[index];
+    return {
+      x: position.x,
+      y: position.y,
+      index: index
+    };
+  }
+  
+  /**
+   * Check if a move would result in a wall collision
+   * @param {Object} position - Current position {x, y}
+   * @param {Object} direction - Movement direction {x, y}
+   * @param {number} distance - Movement distance
+   * @returns {boolean} - True if the move is valid (no wall collision)
+   */
+  function isValidMove(position, direction, distance) {
+    if (!gameState.maze) return true;
+    
+    const { grid, cellSize, offsetX, offsetY } = gameState.maze;
+    
+    // Calculate new position
+    const newX = position.x + direction.x * distance;
+    const newY = position.y + direction.y * distance;
+    
+    // Convert position to grid coordinates
+    const gridCol = Math.floor((newX - offsetX + 32) / cellSize);
+    const gridRow = Math.floor((newY - offsetY + 32) / cellSize);
+    
+    // Check if new position is within grid bounds
+    if (gridRow < 0 || gridRow >= grid.length || gridCol < 0 || gridCol >= grid[0].length) {
+      return false;
+    }
+    
+    // Check if new position is a wall
+    return grid[gridRow][gridCol] !== 1;
   }
   
   /**
@@ -137,12 +240,20 @@
         ghost.update(deltaTime);
       });
       
-      // Check for collisions after grace period
-      if (gameState.gracePeriod <= 0 && CollisionManager.checkPlayerGhostCollisions(gameState.player, gameState.ghosts)) {
-        endGame();
-      } else {
+      // Handle grace period
+      if (gameState.gracePeriod > 0) {
         // Decrease grace period
         gameState.gracePeriod = Math.max(0, gameState.gracePeriod - deltaTime);
+        
+        // Log when grace period ends
+        if (gameState.gracePeriod === 0) {
+          console.log('Grace period ended, collision detection activated');
+        }
+      } else {
+        // Check for collisions after grace period
+        if (CollisionManager.checkPlayerGhostCollisions(gameState.player, gameState.ghosts)) {
+          endGame();
+        }
       }
       
       // Update difficulty timer
@@ -249,6 +360,11 @@
       ghost.draw(gameState.context);
     });
     
+    // Draw grace period indicator
+    if (gameState.gracePeriod > 0) {
+      drawGracePeriodIndicator();
+    }
+    
     // Draw game over message if game is over
     if (gameState.isGameOver && typeof document !== 'undefined') {
       const gameOverElement = document.getElementById('game-over');
@@ -268,34 +384,102 @@
     const ctx = gameState.context;
     
     // Draw darker background
-    ctx.fillStyle = '#121212';
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvasDimensions.width, canvasDimensions.height);
     
-    // Draw grid lines
-    ctx.strokeStyle = '#222222';
-    ctx.lineWidth = 1;
-    
-    // Draw horizontal grid lines
-    const gridSize = 40;
-    for (let y = 0; y < canvasDimensions.height; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvasDimensions.width, y);
-      ctx.stroke();
-    }
-    
-    // Draw vertical grid lines
-    for (let x = 0; x < canvasDimensions.width; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvasDimensions.height);
-      ctx.stroke();
-    }
+    // Draw maze
+    drawMaze(ctx, canvasDimensions);
     
     // Draw border
     ctx.strokeStyle = '#3333FF';
     ctx.lineWidth = 4;
     ctx.strokeRect(2, 2, canvasDimensions.width - 4, canvasDimensions.height - 4);
+  }
+  
+  /**
+   * Draw the maze structure
+   */
+  function drawMaze(ctx, dimensions) {
+    // Maze configuration
+    const cellSize = Math.min(dimensions.width, dimensions.height) / 15;
+    const wallColor = '#2121AA';
+    ctx.fillStyle = wallColor;
+    ctx.strokeStyle = '#3333FF';
+    ctx.lineWidth = 2;
+    
+    // Simple maze layout - 1 represents walls, 0 represents paths
+    const maze = [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
+      [1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ];
+    
+    // Calculate offset to center the maze
+    const offsetX = (dimensions.width - (maze[0].length * cellSize)) / 2;
+    const offsetY = (dimensions.height - (maze.length * cellSize)) / 2;
+    
+    // Draw the maze
+    for (let row = 0; row < maze.length; row++) {
+      for (let col = 0; col < maze[row].length; col++) {
+        if (maze[row][col] === 1) {
+          const x = offsetX + col * cellSize;
+          const y = offsetY + row * cellSize;
+          
+          // Draw maze cell
+          ctx.fillRect(x, y, cellSize, cellSize);
+          ctx.strokeRect(x, y, cellSize, cellSize);
+        }
+      }
+    }
+    
+    // Add to game state so other components can access it
+    gameState.maze = {
+      grid: maze,
+      cellSize: cellSize,
+      offsetX: offsetX,
+      offsetY: offsetY
+    };
+  }
+  
+  /**
+   * Draw the grace period indicator
+   */
+  function drawGracePeriodIndicator() {
+    const ctx = gameState.context;
+    const canvasDimensions = CanvasManager.getDimensions();
+    
+    // Calculate remaining grace period percentage
+    const percentage = gameState.gracePeriod / 3000; // 3000ms is the full grace period
+    
+    // Draw text
+    ctx.font = '20px Arial';
+    ctx.fillStyle = percentage > 0.5 ? 'green' : percentage > 0.25 ? 'yellow' : 'red';
+    ctx.textAlign = 'center';
+    ctx.fillText('Safety Mode: ' + Math.ceil(gameState.gracePeriod / 1000) + 's', canvasDimensions.width / 2, 30);
+    
+    // Draw progress bar
+    const barWidth = 200;
+    const barHeight = 10;
+    const barX = (canvasDimensions.width - barWidth) / 2;
+    const barY = 40;
+    
+    // Draw background
+    ctx.fillStyle = '#333';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+    
+    // Draw progress
+    ctx.fillStyle = percentage > 0.5 ? 'green' : percentage > 0.25 ? 'yellow' : 'red';
+    ctx.fillRect(barX, barY, barWidth * percentage, barHeight);
   }
   
   /**
@@ -346,7 +530,7 @@
     gameState.score = 0;
     gameState.difficultyLevel = 1;
     gameState.difficultyTimer = 0;
-    gameState.gracePeriod = 1500; // Reset grace period
+    gameState.gracePeriod = 3000; // Reset grace period
     
     // Update difficulty display
     updateDifficultyDisplay();
@@ -369,6 +553,7 @@
   // Export functions for use in browser or tests
   exports.initialize = initialize;
   exports.restart = restart;
+  exports.isValidMove = isValidMove;
   
   // For testing purposes, export internal functions
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
