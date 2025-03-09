@@ -1,0 +1,22 @@
+{
+  "name": "pac-face-game",
+  "version": "1.0.0",
+  "description": "A Pac-Man style game with a face as the main character and cats as ghosts",
+  "main": "game.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "moduleFileExtensions": [
+      "js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
+  }
+} 
