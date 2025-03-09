@@ -88,24 +88,52 @@
     
     const canvasDimensions = CanvasManager.getDimensions();
     
+    // Initialize maze if needed
+    if (!gameState.maze) {
+      initializeMaze(canvasDimensions);
+    }
+    
     // Calculate safe positions based on the maze
-    // The maze is drawn centered, so we need to place entities in valid maze positions
     const mazePositions = getMazePositions(canvasDimensions);
     
     if (mazePositions.length > 0) {
+      console.log(`Found ${mazePositions.length} valid positions for characters`);
+      
       // Place player at a random valid position
       const playerPos = getRandomPosition(mazePositions);
       gameState.player.x = playerPos.x;
       gameState.player.y = playerPos.y;
       
-      // Mark the player position as used so ghosts don't spawn there
-      mazePositions.splice(playerPos.index, 1);
+      // Mark the player position and nearby positions as used
+      const usedIndices = [playerPos.index];
+      const proximityThreshold = 100; // Don't spawn ghosts too close to player
       
-      // Place ghosts at random valid positions
-      for (let i = 0; i < 4; i++) {
-        if (mazePositions.length === 0) break;
+      // Find positions to avoid (too close to player)
+      for (let i = 0; i < mazePositions.length; i++) {
+        if (i === playerPos.index) continue;
         
-        const ghostPos = getRandomPosition(mazePositions);
+        const pos = mazePositions[i];
+        const distance = Math.sqrt(
+          Math.pow(pos.x - playerPos.x, 2) + 
+          Math.pow(pos.y - playerPos.y, 2)
+        );
+        
+        if (distance < proximityThreshold) {
+          usedIndices.push(i);
+        }
+      }
+      
+      // Get available positions (not too close to player)
+      const availablePositions = mazePositions.filter((_, index) => 
+        !usedIndices.includes(index)
+      );
+      
+      // Place ghosts at random valid positions away from player
+      const ghostCount = Math.min(4, availablePositions.length);
+      for (let i = 0; i < ghostCount; i++) {
+        if (availablePositions.length === 0) break;
+        
+        const ghostPos = getRandomPosition(availablePositions);
         const ghostImage = i % 2 === 0 ? gameState.assets.cat1 : gameState.assets.cat2;
         
         gameState.ghosts.push(new Ghost(ghostImage, {
@@ -113,37 +141,22 @@
           y: ghostPos.y
         }));
         
-        // Mark the position as used
-        mazePositions.splice(ghostPos.index, 1);
+        // Remove this position so no other ghost spawns here
+        availablePositions.splice(ghostPos.index, 1);
       }
     } else {
+      console.error("No valid maze positions found for characters!");
       // Fallback to original positioning if maze isn't available
-      // Make sure ghosts are placed at a safe distance from the player
-      const safeDistance = 120; // Minimum distance between player and ghosts
+      gameState.player.x = canvasDimensions.width / 2 - gameState.player.width / 2;
+      gameState.player.y = canvasDimensions.height / 2 - gameState.player.height / 2;
       
-      // Ghost 1 at top left - further away from center
-      gameState.ghosts.push(new Ghost(gameState.assets.cat1, {
-        x: Math.max(20, safeDistance),
-        y: Math.max(20, safeDistance)
-      }));
+      // Add a single ghost as fallback
+      const ghost = new Ghost(gameState.assets.cat1, {
+        x: canvasDimensions.width / 4,
+        y: canvasDimensions.height / 4
+      });
       
-      // Ghost 2 at bottom right - further away from center
-      gameState.ghosts.push(new Ghost(gameState.assets.cat2, {
-        x: canvasDimensions.width - Math.max(60, safeDistance) - gameState.assets.cat2.width,
-        y: canvasDimensions.height - Math.max(60, safeDistance) - gameState.assets.cat2.height
-      }));
-      
-      // Ghost 3 at top right - further away from center
-      gameState.ghosts.push(new Ghost(gameState.assets.cat1, {
-        x: canvasDimensions.width - Math.max(60, safeDistance) - gameState.assets.cat1.width,
-        y: Math.max(20, safeDistance)
-      }));
-      
-      // Ghost 4 at bottom left - further away from center
-      gameState.ghosts.push(new Ghost(gameState.assets.cat2, {
-        x: Math.max(20, safeDistance),
-        y: canvasDimensions.height - Math.max(60, safeDistance) - gameState.assets.cat2.height
-      }));
+      gameState.ghosts.push(ghost);
     }
   }
   
@@ -158,35 +171,66 @@
     const positions = [];
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
-    // Assuming a standard entity size of 24px (reducing from previous 32px)
-    const entitySize = 24;
+    // Assuming a standard entity size of 12px (half of the previous 24px)
+    const entitySize = 12;
+    
+    // We'll only use positions that are safely inside path cells
+    const safeDistance = Math.floor(cellSize * 0.3); // 30% of cell size as margin
     
     for (let row = 0; row < grid.length; row++) {
       for (let col = 0; col < grid[row].length; col++) {
         if (grid[row][col] === 0) { // Path cell
-          // Perform additional validation to ensure position is not too close to walls
-          let isInvalidPosition = false;
+          // Only use cells that are not adjacent to walls in any direction
+          let isSafePosition = true;
           
-          // Check surrounding cells to avoid positions too close to walls
+          // Check all 8 surrounding cells to make sure none are walls
           for (let r = Math.max(0, row - 1); r <= Math.min(grid.length - 1, row + 1); r++) {
             for (let c = Math.max(0, col - 1); c <= Math.min(grid[row].length - 1, col + 1); c++) {
-              // Skip diagonal and own cell
-              if ((r === row && c === col) || (r !== row && c !== col)) continue;
+              // Skip if it's the current cell
+              if (r === row && c === col) continue;
               
-              // Skip if surrounding cell is a wall
+              // If any neighboring cell is a wall, consider this position unsafe
               if (grid[r][c] === 1) {
-                // If the wall is too close, consider the position invalid
-                isInvalidPosition = true;
-                break;
+                // Only safe if it's a diagonal and we're centered in the cell
+                const isDiagonal = (r !== row && c !== col);
+                if (!isDiagonal) {
+                  isSafePosition = false;
+                  break;
+                }
               }
             }
-            if (isInvalidPosition) break;
+            if (!isSafePosition) break;
           }
           
-          if (!isInvalidPosition) {
+          if (isSafePosition) {
+            // Calculate position that centers the entity in the cell
+            const centerX = offsetX + col * cellSize + (cellSize / 2);
+            const centerY = offsetY + row * cellSize + (cellSize / 2);
+            
             positions.push({
-              x: offsetX + col * cellSize + (cellSize - entitySize) / 2, // Center entity in cell
-              y: offsetY + row * cellSize + (cellSize - entitySize) / 2,
+              x: centerX - (entitySize / 2), // Center entity in cell
+              y: centerY - (entitySize / 2),
+              row: row,
+              col: col
+            });
+          }
+        }
+      }
+    }
+    
+    // If we didn't find any completely safe positions, accept positions with just horizontal/vertical adjacency
+    if (positions.length === 0) {
+      console.warn("No completely safe positions found. Using positions with some adjacent walls.");
+      
+      for (let row = 0; row < grid.length; row++) {
+        for (let col = 0; col < grid[row].length; col++) {
+          if (grid[row][col] === 0) { // Path cell
+            const centerX = offsetX + col * cellSize + (cellSize / 2);
+            const centerY = offsetY + row * cellSize + (cellSize / 2);
+            
+            positions.push({
+              x: centerX - (entitySize / 2),
+              y: centerY - (entitySize / 2),
               row: row,
               col: col
             });
@@ -263,65 +307,49 @@
     
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
+    // Use player dimensions for collision detection
+    const entityWidth = gameState.player ? gameState.player.width : 12;
+    const entityHeight = gameState.player ? gameState.player.height : 12;
+    
     // Calculate potential new position with the movement
     const newX = position.x + direction.x * distance;
     const newY = position.y + direction.y * distance;
     
-    // Calculate the current cell position
-    const currentCellX = Math.floor((position.x - offsetX) / cellSize);
-    const currentCellY = Math.floor((position.y - offsetY) / cellSize);
+    // Add a small buffer from the wall edges (15% of cell size)
+    const buffer = cellSize * 0.15;
     
-    // Calculate potential new cell position
-    const newCellX = Math.floor((newX - offsetX) / cellSize);
-    const newCellY = Math.floor((newY - offsetY) / cellSize);
+    // Calculate entity bounds at new position
+    const bounds = {
+      left: newX,
+      right: newX + entityWidth,
+      top: newY,
+      bottom: newY + entityHeight
+    };
     
-    // Add a small buffer from the wall edges (20% of cell size)
-    const buffer = cellSize * 0.2;
+    // Check if any corner of the entity would be inside a wall
+    const corners = [
+      {x: bounds.left, y: bounds.top},     // Top-left
+      {x: bounds.right, y: bounds.top},    // Top-right
+      {x: bounds.left, y: bounds.bottom},  // Bottom-left
+      {x: bounds.right, y: bounds.bottom}  // Bottom-right
+    ];
     
-    // Check for walls in potential movement path - more careful checking
-    if (direction.x !== 0) { // Horizontal movement
-      // Check cells in the moving direction for walls
-      if (direction.x > 0) { // Moving right
-        // Check if the right side of player would hit a wall
-        const rightEdge = newX + (gameState.player.width / 2) - buffer;
-        const rightCellX = Math.floor((rightEdge - offsetX) / cellSize);
-        if (rightCellX >= 0 && rightCellX < grid[0].length && 
-            currentCellY >= 0 && currentCellY < grid.length &&
-            grid[currentCellY][rightCellX] === 1) {
-          return false;
-        }
-      } else { // Moving left
-        // Check if the left side of player would hit a wall
-        const leftEdge = newX - (gameState.player.width / 2) + buffer;
-        const leftCellX = Math.floor((leftEdge - offsetX) / cellSize);
-        if (leftCellX >= 0 && leftCellX < grid[0].length && 
-            currentCellY >= 0 && currentCellY < grid.length &&
-            grid[currentCellY][leftCellX] === 1) {
-          return false;
-        }
-      }
-    }
+    // Also check the midpoints of each edge for better accuracy
+    corners.push({x: (bounds.left + bounds.right) / 2, y: bounds.top});    // Top middle
+    corners.push({x: (bounds.left + bounds.right) / 2, y: bounds.bottom}); // Bottom middle
+    corners.push({x: bounds.left, y: (bounds.top + bounds.bottom) / 2});   // Left middle
+    corners.push({x: bounds.right, y: (bounds.top + bounds.bottom) / 2});  // Right middle
     
-    if (direction.y !== 0) { // Vertical movement
-      // Check cells in the moving direction for walls
-      if (direction.y > 0) { // Moving down
-        // Check if the bottom side of player would hit a wall
-        const bottomEdge = newY + (gameState.player.height / 2) - buffer;
-        const bottomCellY = Math.floor((bottomEdge - offsetY) / cellSize);
-        if (currentCellX >= 0 && currentCellX < grid[0].length &&
-            bottomCellY >= 0 && bottomCellY < grid.length &&
-            grid[bottomCellY][currentCellX] === 1) {
-          return false;
-        }
-      } else { // Moving up
-        // Check if the top side of player would hit a wall
-        const topEdge = newY - (gameState.player.height / 2) + buffer;
-        const topCellY = Math.floor((topEdge - offsetY) / cellSize);
-        if (currentCellX >= 0 && currentCellX < grid[0].length &&
-            topCellY >= 0 && topCellY < grid.length &&
-            grid[topCellY][currentCellX] === 1) {
-          return false;
-        }
+    // Check if any of these points would be inside a wall
+    for (const corner of corners) {
+      const gridCol = Math.floor((corner.x - offsetX) / cellSize);
+      const gridRow = Math.floor((corner.y - offsetY) / cellSize);
+      
+      // Check if this position is inside a wall
+      if (gridRow >= 0 && gridRow < grid.length && 
+          gridCol >= 0 && gridCol < grid[0].length && 
+          grid[gridRow][gridCol] === 1) {
+        return false;
       }
     }
     
@@ -329,9 +357,9 @@
     const canvasDimensions = CanvasManager.getDimensions();
     return (
       newX >= 0 &&
-      newX + gameState.player.width <= canvasDimensions.width &&
+      newX + entityWidth <= canvasDimensions.width &&
       newY >= 0 &&
-      newY + gameState.player.height <= canvasDimensions.height
+      newY + entityHeight <= canvasDimensions.height
     );
   }
   

@@ -30,7 +30,7 @@
       this.image = image;
       
       // Scale factor to make ghost fit better in maze
-      this.scaleFactor = 0.375;
+      this.scaleFactor = 0.1875; // Reduced from 0.375 (halved again)
       
       // Set dimensions based on the image size with scaling
       this.width = image.width * this.scaleFactor;
@@ -57,54 +57,61 @@
      * @param {number} deltaTime - The time since the last update in milliseconds.
      */
     update(deltaTime) {
-      // Calculate movement delta
-      const distance = this.speed * (deltaTime / 1000);
-      let dx = this.direction.x * distance;
-      let dy = this.direction.y * distance;
-      
-      // Check for maze wall collisions if available
-      let hitBoundary = false;
-      
-      if (typeof window !== 'undefined' && window.GameEngine && window.GameEngine.isValidMove) {
-        // Use GameEngine's isValidMove function
-        if (!window.GameEngine.isValidMove(
-          { x: this.x, y: this.y },
-          this.direction,
-          distance
-        )) {
-          hitBoundary = true;
-          dx = 0;
-          dy = 0;
-        }
-      } else {
-        // Fallback to original boundary detection
-        const canvasDimensions = CanvasManager.getDimensions();
-        hitBoundary = 
-          this.x + dx <= 0 || 
-          this.x + dx >= canvasDimensions.width - this.width ||
-          this.y + dy <= 0 || 
-          this.y + dy >= canvasDimensions.height - this.height;
-      }
-      
-      // Update position if no collision
-      if (!hitBoundary) {
-        this.x += dx;
-        this.y += dy;
-      } else {
-        // If hit boundary, change direction immediately
-        this.chooseNewDirection();
-      }
-      
-      // Keep ghost within canvas bounds
-      const canvasDimensions = CanvasManager.getDimensions();
-      this.x = Math.max(0, Math.min(this.x, canvasDimensions.width - this.width));
-      this.y = Math.max(0, Math.min(this.y, canvasDimensions.height - this.height));
-      
-      // Update direction timer
+      // Track time since last direction change
       this.directionTimer += deltaTime;
       
-      // Periodically change direction
-      if (this.directionTimer >= this.directionChangeInterval) {
+      // Calculate movement delta based on speed and time
+      const dx = this.direction.x * this.speed * (deltaTime / 1000);
+      const dy = this.direction.y * this.speed * (deltaTime / 1000);
+      
+      // Calculate potential new position
+      const newX = this.x + dx;
+      const newY = this.y + dy;
+      
+      // Try to use GameEngine's isValidMove if available (for maze walls)
+      if (typeof window !== 'undefined' && window.GameEngine && window.GameEngine.isValidMove) {
+        const isValid = window.GameEngine.isValidMove(
+          {x: this.x, y: this.y}, 
+          {x: this.direction.x, y: this.direction.y}, 
+          this.speed * (deltaTime / 1000)
+        );
+        
+        if (isValid) {
+          // Move if valid
+          this.x = newX;
+          this.y = newY;
+        } else {
+          // Change direction immediately if we hit a wall
+          this.chooseNewDirection();
+          this.directionTimer = 0;
+        }
+      } else {
+        // Fallback boundary detection if GameEngine is not available
+        const canvasDimensions = typeof window !== 'undefined' && window.CanvasManager ? 
+                                 window.CanvasManager.getDimensions() : 
+                                 { width: 600, height: 400 };
+        
+        // Check if we're trying to move out of bounds
+        const wouldHitBoundary = (
+          newX < 0 || 
+          newY < 0 || 
+          newX + this.width > canvasDimensions.width || 
+          newY + this.height > canvasDimensions.height
+        );
+        
+        if (wouldHitBoundary) {
+          // Hit a boundary, choose a new direction
+          this.chooseNewDirection();
+          this.directionTimer = 0;
+        } else {
+          // Safe to move
+          this.x = newX;
+          this.y = newY;
+        }
+      }
+      
+      // Change direction periodically (2-4 seconds) if we haven't changed due to collision
+      if (this.directionTimer > 2000 + Math.random() * 2000) {
         this.chooseNewDirection();
         this.directionTimer = 0;
       }
@@ -114,25 +121,48 @@
      * Choose a new random direction for the ghost.
      */
     chooseNewDirection() {
-      // Possible directions: up, down, left, right
-      const directions = [
-        { x: 0, y: -1 }, // Up
-        { x: 0, y: 1 },  // Down
-        { x: -1, y: 0 }, // Left
-        { x: 1, y: 0 }   // Right
+      // Get available directions - avoid immediate reversal which can cause getting stuck
+      const availableDirections = [];
+      const currentDirection = {x: this.direction.x, y: this.direction.y};
+      
+      // Check all four possible directions
+      const possibleDirections = [
+        {x: 1, y: 0},   // Right
+        {x: -1, y: 0},  // Left
+        {x: 0, y: 1},   // Down
+        {x: 0, y: -1}   // Up
       ];
       
-      // Choose a random direction that's different from the current one
-      let newDirection;
-      do {
-        const randomIndex = Math.floor(Math.random() * directions.length);
-        newDirection = directions[randomIndex];
-      } while (
-        newDirection.x === this.direction.x && 
-        newDirection.y === this.direction.y
-      );
+      // Try each direction and see if it's valid
+      for (const dir of possibleDirections) {
+        // Skip opposite direction to avoid getting stuck between walls
+        if (dir.x === -currentDirection.x && dir.y === -currentDirection.y) continue;
+        
+        // Check if this direction is valid (won't hit a wall)
+        let isValid = true;
+        
+        if (typeof window !== 'undefined' && window.GameEngine && window.GameEngine.isValidMove) {
+          isValid = window.GameEngine.isValidMove(
+            {x: this.x, y: this.y}, 
+            dir, 
+            this.speed * 0.05 // Small test distance
+          );
+        }
+        
+        if (isValid) {
+          availableDirections.push(dir);
+        }
+      }
       
-      this.direction = newDirection;
+      // If we have valid directions, choose one randomly
+      if (availableDirections.length > 0) {
+        const randomIndex = Math.floor(Math.random() * availableDirections.length);
+        this.direction = availableDirections[randomIndex];
+      } else {
+        // If all directions are invalid, just choose any random direction
+        const randomIndex = Math.floor(Math.random() * possibleDirections.length);
+        this.direction = possibleDirections[randomIndex];
+      }
     }
     
     /**
@@ -229,7 +259,8 @@
      */
     getBounds() {
       // Add a slight reduction to make the hitbox a bit smaller than visual size
-      const hitboxReduction = 4;
+      // Using a smaller reduction for the much smaller character size
+      const hitboxReduction = 2;
       return {
         left: this.x + hitboxReduction,
         right: this.x + this.width - hitboxReduction,
