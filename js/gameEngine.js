@@ -573,29 +573,18 @@
     // Draw background (which includes maze)
     drawBackground();
     
-    // Log render confirmation
-    console.log("Rendering - Maze dimensions:", 
-      gameState.maze ? `${gameState.maze.grid[0].length}x${gameState.maze.grid.length}` : "Maze not initialized");
-    
     // Draw player if available
     if (gameState.player) {
       gameState.player.draw(gameState.context);
-      
-      // Log player position
-      console.log("Player position:", 
-        `(${Math.round(gameState.player.x)}, ${Math.round(gameState.player.y)})`);
     } else {
       console.warn("No player to render");
     }
     
     // Draw ghosts if available
     if (gameState.ghosts && gameState.ghosts.length > 0) {
-      gameState.ghosts.forEach((ghost, index) => {
+      gameState.ghosts.forEach((ghost) => {
         ghost.draw(gameState.context);
       });
-      
-      // Log ghost count
-      console.log(`Rendered ${gameState.ghosts.length} ghosts`);
     } else {
       console.warn("No ghosts to render");
     }
@@ -660,10 +649,6 @@
     
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
-    // Log maze details
-    console.log("Drawing maze with:", 
-      `cellSize=${Math.round(cellSize)}, offset=(${Math.round(offsetX)},${Math.round(offsetY)})`);
-    
     // Draw the maze grid
     for (let row = 0; row < grid.length; row++) {
       for (let col = 0; col < grid[row].length; col++) {
@@ -673,11 +658,6 @@
         if (grid[row][col] === 1) { // Wall cell
           ctx.fillStyle = '#0000FF'; // Blue
           ctx.fillRect(x, y, cellSize, cellSize);
-          
-          // Add outline to walls for better visibility
-          ctx.strokeStyle = '#0000AA';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(x, y, cellSize, cellSize);
         } else {
           // Draw path cells with emerald green
           ctx.fillStyle = '#08784e'; // Emerald green

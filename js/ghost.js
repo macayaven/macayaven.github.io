@@ -193,11 +193,6 @@
         return;
       }
       
-      // Add debug outline to see where ghost is positioned
-      context.strokeStyle = 'white';
-      context.lineWidth = 2;
-      context.strokeRect(this.x, this.y, this.width, this.height);
-      
       try {
         // Check if the image is available and loaded
         const imageLoadedCorrectly = this.image && this.image.width > 0 && this.image.height > 0;
@@ -212,9 +207,9 @@
             this.height
           );
           
-          // Add small white dot to confirm real image is drawn
-          context.fillStyle = 'white';
-          context.fillRect(this.x, this.y, 4, 4);
+          // Small indicator dot for debugging (can be commented out for production)
+          // context.fillStyle = 'white';
+          // context.fillRect(this.x, this.y, 4, 4);
           
           console.log("Drawing ghost with image:", 
             `dimensions=${this.width}x${this.height}, position=(${Math.round(this.x)},${Math.round(this.y)})`);
@@ -234,11 +229,6 @@
      * @param {CanvasRenderingContext2D} context - The canvas rendering context.
      */
     drawFallback(context) {
-      // Draw the ghost outline for visibility
-      context.strokeStyle = '#FFFFFF'; // White outline for better visibility
-      context.lineWidth = 2;
-      context.strokeRect(this.x, this.y, this.width, this.height);
-      
       // Determine ghost color based on the image reference - use very bright colors for visibility
       let ghostColor = '#FF0000'; // Bright red for default
       if (this.image && this.image.src) {
@@ -260,9 +250,6 @@
       context.arc(centerX, centerY, radius-2, 0, Math.PI * 2);
       context.fillStyle = ghostColor;
       context.fill();
-      context.strokeStyle = '#FFFFFF';
-      context.lineWidth = 1;
-      context.stroke();
       
       // Draw eyes - make larger for better visibility
       context.fillStyle = 'white';
