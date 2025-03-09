@@ -1,0 +1,35 @@
+# Node.js dependencies
+node_modules/
+package-lock.json
+
+# Test files (not needed for production)
+tests/
+jest.config.js
+
+# Editor folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# System files
+.DS_Store
+Thumbs.db
+.directory
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional: Only include if you don't want these on GitHub Pages
+# Commented out as these are needed for the actual game
+# package.json
+
+# Misc
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local 

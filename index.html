@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pac-Face Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="score">Score: <span id="scoreValue">0</span></div>
+        <div id="difficulty">Level: <span id="difficultyValue">1</span></div>
+        <div id="game-over" class="hidden">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button id="restart-button">Play Again</button>
+        </div>
+        <div id="mobile-instructions" class="hidden">
+            <p>Swipe to move</p>
+        </div>
+    </div>
+
+    <!-- Module Scripts -->
+    <script src="js/svgAssets.js"></script>
+    <script src="js/assetManager.js"></script>
+    <script src="js/canvasManager.js"></script>
+    <script src="js/inputHandler.js"></script>
+    <script src="js/collisionManager.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/ghost.js"></script>
+    <script src="js/gameEngine.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
