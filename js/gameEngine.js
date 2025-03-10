@@ -41,16 +41,18 @@
     gracePeriod: 3000, // 3 second grace period at start
     gracePeriodMax: 3000,
     maze: null,
-    pills: []
+    colors: [
+      '#4a9636', // Green
+      '#3657a7', // Blue
+      '#a73657', // Red
+      '#a78136', // Orange
+      '#8136a7', // Purple
+      '#36a794'  // Teal
+    ],
+    currentColorIndex: 0,
+    colorChangeInterval: 5000, // Change color every 5 seconds
+    lastColorChange: 0
   };
-  
-  // Helper function for collision detection between two rectangles
-  function isColliding(a, b) {
-    return a.x < b.x + b.width &&
-           a.x + a.width > b.x &&
-           a.y < b.y + b.height &&
-           a.y + a.height > b.y;
-  }
   
   /**
    * Initialize game state and resources.
@@ -121,7 +123,6 @@
     createEntities();
     console.log("Entities created:", 
       `Player: ${gameState.player ? "✓" : "✗"}, Ghosts: ${gameState.ghosts?.length || 0}`);
-    createPills();
     
     // Validate all entity positions
     validateEntityPositions();
@@ -483,6 +484,14 @@
     // This helps prevent faster movement on devices with different framerates or CPUs
     const normalizedDeltaTime = Math.min(deltaTime, 50); // Cap at 50ms to prevent huge jumps
     
+    // Update color change timer
+    gameState.colorChangeTimer = (gameState.colorChangeTimer || 0) + normalizedDeltaTime;
+    if (gameState.colorChangeTimer > gameState.colorChangeInterval) {
+      gameState.currentColorIndex = (gameState.currentColorIndex + 1) % gameState.colors.length;
+      gameState.colorChangeTimer = 0;
+      console.log("Changed maze color to:", gameState.colors[gameState.currentColorIndex]);
+    }
+    
     // Get player input
     const direction = InputHandler.getDirection();
     
@@ -548,14 +557,14 @@
       gameState.difficultyTimer = 0;
     }
     
-    // Check for pill collisions
-    gameState.pills.forEach(function(pill) {
-      if (!pill.collected && isColliding(gameState.player, pill)) {
-        pill.collected = true;
-        gameState.score += 100;
-        console.log("Pill collected! +100 points.");
-      }
-    });
+    // Increment score based on movement and time
+    if (direction.x !== 0 || direction.y !== 0) {
+      // Player is moving, give more points
+      gameState.score += Math.round(normalizedDeltaTime / 10) * gameState.difficultyLevel;
+    } else {
+      // Player is stationary, give fewer points
+      gameState.score += Math.round(normalizedDeltaTime / 50);
+    }
     
     // Update score display
     updateScoreDisplay();
@@ -620,15 +629,6 @@
     
     // Draw background (which includes maze)
     drawBackground();
-    
-    // Draw pills on the maze
-    if (gameState.pills && gameState.pills.length > 0) {
-      gameState.pills.forEach(function(pill) {
-        if (!pill.collected) {
-          gameState.context.drawImage(pill.image, pill.x, pill.y, pill.width, pill.height);
-        }
-      });
-    }
     
     // Draw player if available
     if (gameState.player) {
@@ -706,18 +706,23 @@
     
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
+    // Use current color for maze paths
+    const pathColor = gameState.colors[gameState.currentColorIndex];
+    
     // Draw the maze grid
     for (let row = 0; row < grid.length; row++) {
       for (let col = 0; col < grid[row].length; col++) {
-        const x = offsetX + col * cellSize;
-        const y = offsetY + row * cellSize;
+        const cell = grid[row][col];
+        const x = col * cellSize + offsetX;
+        const y = row * cellSize + offsetY;
         
-        if (grid[row][col] === 1) { // Wall cell
-          ctx.fillStyle = '#0000FF'; // Blue
+        if (cell === 0) {
+          // Path - use current color
+          ctx.fillStyle = pathColor;
           ctx.fillRect(x, y, cellSize, cellSize);
         } else {
-          // Draw path cells with emerald green
-          ctx.fillStyle = '#08784e'; // Emerald green
+          // Draw wall cells with black
+          ctx.fillStyle = '#000000'; // Black
           ctx.fillRect(x, y, cellSize, cellSize);
         }
       }
@@ -850,7 +855,6 @@
     // Re-initialize with current assets for clean slate
     createEntities();
     console.log("Entities recreated");
-    createPills();
     
     // Ensure all characters are in valid positions
     validateEntityPositions();
@@ -995,39 +999,6 @@
     } else {
       console.warn("No valid positions found for new ghost");
     }
-  }
-  
-  function createPills() {
-    if (!gameState.maze) {
-      const dimensions = CanvasManager.getDimensions();
-      initializeMaze(dimensions);
-    }
-    const pills = [];
-    const { grid, cellSize, offsetX, offsetY } = gameState.maze;
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const pillSize = isMobile ? 8 : 12;
-    for (let row = 0; row < grid.length; row++) {
-      for (let col = 0; col < grid[row].length; col++) {
-        if (grid[row][col] === 0 && row % 2 === 0 && col % 2 === 0) {
-          const x = offsetX + col * cellSize + (cellSize / 2) - (pillSize / 2);
-          const y = offsetY + row * cellSize + (cellSize / 2) - (pillSize / 2);
-          const pillAssetKeys = ['pill', 'pill2', 'pill3', 'pill4'];
-          const randomIndex = Math.floor(Math.random() * pillAssetKeys.length);
-          const assetKey = pillAssetKeys[randomIndex];
-          const pill = {
-            x: x,
-            y: y,
-            width: pillSize,
-            height: pillSize,
-            image: gameState.assets[assetKey],
-            collected: false
-          };
-          pills.push(pill);
-        }
-      }
-    }
-    gameState.pills = pills;
-    console.log(`Created ${pills.length} pills.`);
   }
   
   // Export functions for use in browser or tests
