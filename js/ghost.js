@@ -72,7 +72,7 @@
       this.y = position.y;
       
       // Movement properties - same base speed regardless of device
-      this.baseSpeed = 150; // Base speed in pixels per second
+      this.baseSpeed = 100; // Base speed in pixels per second
       this.speed = this.baseSpeed * (this.scaleFactor / 0.1875);
       this.direction = { x: 0, y: 0 };
       
