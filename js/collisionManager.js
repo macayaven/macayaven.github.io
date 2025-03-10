@@ -30,7 +30,7 @@
   function checkPlayerGhostCollisions(player, ghosts) {
     const playerBounds = player.getBounds();
     
-    return ghosts.some(ghost => {
+    return ghosts.find(ghost => {
       const ghostBounds = ghost.getBounds();
       return checkCollision(playerBounds, ghostBounds);
     });

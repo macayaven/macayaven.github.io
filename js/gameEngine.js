@@ -525,8 +525,9 @@
       }
     } else {
       // Check for collisions after grace period
-      if (CollisionManager.checkPlayerGhostCollisions(gameState.player, gameState.ghosts)) {
-        endGame();
+      var collidedGhost = CollisionManager.checkPlayerGhostCollisions(gameState.player, gameState.ghosts);
+      if (collidedGhost) {
+        gameOver(collidedGhost);
       }
     }
     
@@ -762,7 +763,7 @@
   /**
    * End the game.
    */
-  function endGame() {
+  function gameOver(ghost) {
     gameState.isGameOver = true;
     gameState.isRunning = false;
 
@@ -772,6 +773,24 @@
       if (finalScoreElement) {
         finalScoreElement.textContent = gameState.score;
       }
+    }
+
+    // Attempt to open the ghost's corresponding URL
+    const ghostUrls = {
+      ghost_linkedin: 'https://linkedin.com',
+      ghost_kaggle: 'https://kaggle.com',
+      ghost_github: 'https://github.com'
+    };
+    const url = ghostUrls[ghost.type] || 'https://github.com';
+    const newTab = window.open(url, '_blank');
+    let message = 'Game Over! ';
+    if (!newTab) {
+      message += "Please visit <a href='" + url + "' target='_blank'>" + url + "</a> for more info.";
+    }
+    const gameOverElement = document.getElementById('game-over');
+    if (gameOverElement) {
+      gameOverElement.innerHTML = message;
+      gameOverElement.classList.remove('hidden');
     }
   }
   
