@@ -778,9 +778,9 @@
 
     // Get ghost URL mapping
     const ghostUrls = {
-      ghost_linkedin: 'https://linkedin.com',
-      ghost_kaggle: 'https://kaggle.com',
-      ghost_github: 'https://github.com'
+      ghost_linkedin: 'https://www.linkedin.com/in/carlos-crespo-macaya/',
+      ghost_kaggle: 'https://www.kaggle.com/macayaven',
+      ghost_github: 'https://github.com/macayaven'
     };
     const url = ghostUrls[ghost.type] || 'https://github.com';
 
