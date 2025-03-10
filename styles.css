@@ -7,17 +7,19 @@
 body {
     font-family: Arial, sans-serif;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
     min-height: 100vh;
-    background-color: #111;
-    color: white;
+    background-color: #f0e6ff; /* Light creamy purple */
+    color: #333;
 }
 
 #game-container {
     position: relative;
     max-width: 800px;
     margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 canvas {
@@ -107,7 +109,48 @@ canvas {
     display: none !important;
 }
 
-/* Responsive adjustments */
+/* Add styles for the header */
+#site-header {
+    width: 100%;
+    padding: 10px 20px;
+    background-color: rgba(240, 230, 255, 0.8); /* Semi-transparent version of background */
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 800px;
+    width: 100%;
+}
+
+#site-header h3 {
+    font-size: 1rem;
+    margin-right: 15px;
+    color: #5a3a7e;
+}
+
+.social-links {
+    display: flex;
+    align-items: center;
+}
+
+.social-icon {
+    width: 24px;
+    height: 24px;
+    margin: 0 5px;
+    transition: transform 0.2s ease;
+}
+
+.social-icon:hover {
+    transform: scale(1.2);
+}
+
+/* Media queries for responsive header */
 @media (max-width: 768px) {
     #score {
         font-size: 18px;
@@ -133,6 +176,20 @@ canvas {
     #mobile-instructions {
         font-size: 16px;
         padding: 8px 16px;
+    }
+    
+    #site-header {
+        padding: 8px 15px;
+    }
+    
+    #site-header h3 {
+        font-size: 0.9rem;
+        margin-right: 10px;
+    }
+    
+    .social-icon {
+        width: 20px;
+        height: 20px;
     }
 }
 
@@ -162,5 +219,21 @@ canvas {
         font-size: 14px;
         padding: 6px 12px;
         bottom: 10px;
+    }
+    
+    #site-header {
+        padding: 5px 10px;
+    }
+    
+    #site-header h3 {
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+        margin-right: 5px;
+    }
+    
+    .social-icon {
+        width: 18px;
+        height: 18px;
+        margin: 0 3px;
     }
 } 

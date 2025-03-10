@@ -40,7 +40,18 @@
     difficultyInterval: 30000, // 30 seconds per level
     gracePeriod: 3000, // 3 second grace period at start
     gracePeriodMax: 3000,
-    maze: null
+    maze: null,
+    colors: [
+      '#4a9636', // Green
+      '#3657a7', // Blue
+      '#a73657', // Red
+      '#a78136', // Orange
+      '#8136a7', // Purple
+      '#36a794'  // Teal
+    ],
+    currentColorIndex: 0,
+    colorChangeInterval: 5000, // Change color every 5 seconds
+    lastColorChange: 0
   };
   
   /**
@@ -473,6 +484,14 @@
     // This helps prevent faster movement on devices with different framerates or CPUs
     const normalizedDeltaTime = Math.min(deltaTime, 50); // Cap at 50ms to prevent huge jumps
     
+    // Update color change timer
+    gameState.colorChangeTimer = (gameState.colorChangeTimer || 0) + normalizedDeltaTime;
+    if (gameState.colorChangeTimer > gameState.colorChangeInterval) {
+      gameState.currentColorIndex = (gameState.currentColorIndex + 1) % gameState.colors.length;
+      gameState.colorChangeTimer = 0;
+      console.log("Changed maze color to:", gameState.colors[gameState.currentColorIndex]);
+    }
+    
     // Get player input
     const direction = InputHandler.getDirection();
     
@@ -687,18 +706,23 @@
     
     const { grid, cellSize, offsetX, offsetY } = gameState.maze;
     
+    // Use current color for maze paths
+    const pathColor = gameState.colors[gameState.currentColorIndex];
+    
     // Draw the maze grid
     for (let row = 0; row < grid.length; row++) {
       for (let col = 0; col < grid[row].length; col++) {
-        const x = offsetX + col * cellSize;
-        const y = offsetY + row * cellSize;
+        const cell = grid[row][col];
+        const x = col * cellSize + offsetX;
+        const y = row * cellSize + offsetY;
         
-        if (grid[row][col] === 1) { // Wall cell
-          ctx.fillStyle = '#0000FF'; // Blue
+        if (cell === 0) {
+          // Path - use current color
+          ctx.fillStyle = pathColor;
           ctx.fillRect(x, y, cellSize, cellSize);
         } else {
-          // Draw path cells with emerald green
-          ctx.fillStyle = '#08784e'; // Emerald green
+          // Draw wall cells with black
+          ctx.fillStyle = '#000000'; // Black
           ctx.fillRect(x, y, cellSize, cellSize);
         }
       }
