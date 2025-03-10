@@ -48,7 +48,7 @@
       this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
       // Scale factor to make ghost fit better in maze - smaller on mobile
-      this.scaleFactor = this.isMobile ? 0.12 : 0.1875; // 0.12 for mobile, 0.1875 for desktop
+      this.scaleFactor = this.isMobile ? 0.12 : 0.3; // 0.12 for mobile, 0.1875 for desktop
       
       // Adjust scale further based on screen size for mobile
       if (this.isMobile) {
