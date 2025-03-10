@@ -1,5 +1,5 @@
 /**
- * Ghost class representing the enemy cat characters.
+ * Ghost class representing an enemy.
  * @module Ghost
  */
 
@@ -17,7 +17,7 @@
   }
   
   /**
-   * Ghost class representing a cat enemy.
+   * Ghost class representing an enemy.
    */
   class Ghost {
     /**

@@ -48,11 +48,11 @@
   }
   
   /**
-   * Generate a cat ghost SVG with a given color.
-   * @param {string} color - The fill color for the cat.
-   * @returns {string} - Data URL for the cat ghost.
+   * Generate a ghost SVG with a given color.
+   * @param {string} color - The fill color for the ghost.
+   * @returns {string} - Data URL for the ghost.
    */
-  function generateCatSVG(color) {
+  function generateGhostSVG(color) {
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
         <path d="M10,50 L10,20 Q10,10 32,10 Q54,10 54,20 L54,50 Q54,55 49,50 L43,42 Q40,38 37,42 L32,50 Q29,55 26,50 L21,42 Q18,38 15,42 L10,50" fill="${color}" stroke="black" stroke-width="2"/>
@@ -119,11 +119,11 @@
     return Promise.all([
       createImageFromSVG(generateFaceOpenSVG()),
       createImageFromSVG(generateFaceClosedSVG()),
-      createImageFromSVG(generateCatSVG('#ff6666')), // Red cat
-      createImageFromSVG(generateCatSVG('#6666ff'))  // Blue cat
-    ]).then(([faceOpen, faceClosed, cat1, cat2]) => {
+      createImageFromSVG(generateGhostSVG('#ff6666')), // Red ghost
+      createImageFromSVG(generateGhostSVG('#6666ff'))  // Blue ghost
+    ]).then(([faceOpen, faceClosed, ghost1, ghost2]) => {
       console.log('All SVG assets generated and loaded');
-      return { faceOpen, faceClosed, cat1, cat2 };
+      return { faceOpen, faceClosed, ghost1, ghost2 };
     });
   }
   
