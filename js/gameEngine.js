@@ -191,9 +191,10 @@
         if (availablePositions.length === 0) break;
         
         const ghostPos = getRandomPosition(availablePositions);
-        const ghostImage = i % 2 === 0 ? gameState.assets.cat1 : gameState.assets.cat2;
+        const ghostTypes = ['ghost_linkedin', 'ghost_kaggle', 'ghost_github'];
+        const ghostType = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
         
-        gameState.ghosts.push(new Ghost(ghostImage, {
+        gameState.ghosts.push(new Ghost(ghostType, {
           x: ghostPos.x,
           y: ghostPos.y
         }));
@@ -207,12 +208,13 @@
       gameState.player.x = canvasDimensions.width / 2 - gameState.player.width / 2;
       gameState.player.y = canvasDimensions.height / 2 - gameState.player.height / 2;
       
-      // Add a single ghost as fallback
-      const ghost = new Ghost(gameState.assets.cat1, {
+      // Add a single ghost as fallback using ghost type
+      const ghostTypes = ['ghost_linkedin', 'ghost_kaggle', 'ghost_github'];
+      const ghostType = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
+      const ghost = new Ghost(ghostType, {
         x: canvasDimensions.width / 4,
         y: canvasDimensions.height / 4
       });
-      
       gameState.ghosts.push(ghost);
     }
   }
@@ -905,7 +907,8 @@
    */
   function addGhost() {
     const canvasDimensions = CanvasManager.getDimensions();
-    const ghostImage = Math.random() < 0.5 ? gameState.assets.cat1 : gameState.assets.cat2;
+    const ghostTypes = ['ghost_linkedin', 'ghost_kaggle', 'ghost_github'];
+    const ghostType = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
     
     // Get valid positions based on the maze
     const validPositions = getMazePositions(canvasDimensions);
@@ -933,7 +936,7 @@
       const position = positionsToUse[index];
       
       // Create and add the new ghost
-      const newGhost = new Ghost(ghostImage, {
+      const newGhost = new Ghost(ghostType, {
         x: position.x,
         y: position.y
       });

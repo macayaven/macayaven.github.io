@@ -12,8 +12,9 @@
     const assetUrls = {
       faceOpen: 'assets/face-open.png',
       faceClosed: 'assets/face-closed.png',
-      cat1: 'assets/cat1.png',
-      cat2: 'assets/cat2.png'
+      ghost_linkedin: 'assets/ghost_linkedin.png',
+      ghost_kaggle: 'assets/ghost_kaggle.png',
+      ghost_github: 'assets/ghost_github.png'
     };
     
     // Show a loading message
