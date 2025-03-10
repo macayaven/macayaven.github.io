@@ -634,7 +634,7 @@
     
     // Draw game over message if game is over
     if (gameState.isGameOver && typeof document !== 'undefined') {
-      const gameOverElement = document.getElementById('game-over');
+      var gameOverElement = document.getElementById('game-over') || document.getElementById('gameover');
       if (gameOverElement) {
         gameOverElement.classList.remove('hidden');
       }
@@ -764,6 +764,7 @@
    * End the game.
    */
   function gameOver(ghost) {
+    console.log('gameOver triggered for ghost type: ' + ghost.type);
     gameState.isGameOver = true;
     gameState.isRunning = false;
 
@@ -775,19 +776,24 @@
       }
     }
 
-    // Attempt to open the ghost's corresponding URL
+    // Get ghost URL mapping
     const ghostUrls = {
       ghost_linkedin: 'https://linkedin.com',
       ghost_kaggle: 'https://kaggle.com',
       ghost_github: 'https://github.com'
     };
     const url = ghostUrls[ghost.type] || 'https://github.com';
-    const newTab = window.open(url, '_blank');
-    let message = 'Game Over! ';
-    if (!newTab) {
-      message += "Please visit <a href='" + url + "' target='_blank'>" + url + "</a> for more info.";
+
+    // Attempt to open the URL in a new tab, using try/catch to handle popup blockers
+    try {
+      window.open(url, '_blank');
+    } catch (e) {
+      // Ignore errors
     }
-    const gameOverElement = document.getElementById('game-over');
+
+    // Always update the game over message with a clickable link
+    const message = "Game Over! Please visit <a href='" + url + "' target='_blank'>" + url + "</a> for more info.";
+    var gameOverElement = document.getElementById('game-over') || document.getElementById('gameover');
     if (gameOverElement) {
       gameOverElement.innerHTML = message;
       gameOverElement.classList.remove('hidden');
@@ -813,7 +819,7 @@
     
     // Hide game over screen
     if (typeof document !== 'undefined') {
-      const gameOverElement = document.getElementById('game-over');
+      var gameOverElement = document.getElementById('game-over') || document.getElementById('gameover');
       if (gameOverElement) {
         gameOverElement.classList.add('hidden');
         console.log("Game over element hidden");
