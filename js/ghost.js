@@ -22,12 +22,27 @@
   class Ghost {
     /**
      * Create a new Ghost instance.
-     * @param {Image} image - The cat image to use for this ghost.
+     * @param {string} ghostType - The type of ghost.
      * @param {Object} position - The initial position {x, y}.
      */
-    constructor(image, position) {
-      // Store the ghost image
-      this.image = image;
+    constructor(ghostType, position) {
+      // Set ghost type
+      this.type = ghostType;
+      // Load the corresponding PNG image from assets based on ghost type
+      if (this.type === 'ghost_linkedin') {
+        this.image = new Image();
+        this.image.src = 'assets/ghost_linkedin.png';
+      } else if (this.type === 'ghost_kaggle') {
+        this.image = new Image();
+        this.image.src = 'assets/ghost_kaggle.png';
+      } else if (this.type === 'ghost_github') {
+        this.image = new Image();
+        this.image.src = 'assets/ghost_github.png';
+      } else {
+        // If type unrecognized, randomly choose ghost1.png or ghost2.png
+        this.image = new Image();
+        this.image.src = Math.random() < 0.5 ? 'assets/ghost1.png' : 'assets/ghost2.png';
+      }
       
       // Detect if we're on a mobile device for sizing
       this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -44,12 +59,13 @@
         }
       }
       
-      // Set dimensions based on the image size with scaling
-      this.width = image.width * this.scaleFactor;
-      this.height = image.height * this.scaleFactor;
+      // Set dimensions based on a default ghost size (64x64) with scaling
+      this.baseSize = 64;
+      this.width = this.baseSize * this.scaleFactor;
+      this.height = this.baseSize * this.scaleFactor;
       
-      // Log the ghost size for debugging
-      console.log(`Ghost size set: ${this.width}x${this.height}, isMobile: ${this.isMobile}`);
+      // Log the ghost type and size for debugging
+      console.log(`Ghost (${this.type}) size set: ${this.width}x${this.height}, isMobile: ${this.isMobile}`);
       
       // Set initial position
       this.x = position.x;
@@ -57,7 +73,7 @@
       
       // Movement properties - same base speed regardless of device
       this.baseSpeed = 150; // Base speed in pixels per second
-      this.speed = this.baseSpeed * (this.scaleFactor / 0.1875); // Adjust speed relative to scale factor so that relative speed (in ghost sizes per second) is consistent across devices
+      this.speed = this.baseSpeed * (this.scaleFactor / 0.1875);
       this.direction = { x: 0, y: 0 };
       
       // Direction change behavior
@@ -213,82 +229,18 @@
         return;
       }
       
-      try {
-        // Check if the image is available and loaded
-        const imageLoadedCorrectly = this.image && this.image.width > 0 && this.image.height > 0;
-        
-        if (imageLoadedCorrectly) {
-          // Draw the actual image with scaling
-          context.drawImage(
-            this.image, 
-            this.x, 
-            this.y, 
-            this.width, 
-            this.height
-          );
-          
-          // Small indicator dot for debugging (can be commented out for production)
-          // context.fillStyle = 'white';
-          // context.fillRect(this.x, this.y, 4, 4);
-          
-          console.log("Drawing ghost with image:", 
-            `dimensions=${this.width}x${this.height}, position=(${Math.round(this.x)},${Math.round(this.y)})`);
-        } else {
-          // Fall back to drawn representation
-          console.warn("Using fallback drawing for ghost - image not loaded correctly");
-          this.drawFallback(context);
-        }
-      } catch (error) {
-        console.error('Error drawing ghost:', error);
-        this.drawFallback(context);
-      }
-    }
-    
-    /**
-     * Draw a fallback representation of the ghost if the image fails to load.
-     * @param {CanvasRenderingContext2D} context - The canvas rendering context.
-     */
-    drawFallback(context) {
-      // Determine ghost color based on the image reference - use very bright colors for visibility
-      let ghostColor = '#FF0000'; // Bright red for default
-      if (this.image && this.image.src) {
-        const imgSrc = this.image.src.toLowerCase();
-        if (imgSrc.includes('cat1')) {
-          ghostColor = '#FF9500'; // Bright orange for cat1
-        } else if (imgSrc.includes('cat2')) {
-          ghostColor = '#00FFFF'; // Bright cyan for cat2
-        }
+      // If the image is loaded, draw it; otherwise, optionally draw a fallback rectangle
+      if (this.image && this.image.complete && this.image.naturalWidth > 0) {
+        context.drawImage(this.image, this.x, this.y, this.width, this.height);
+      } else {
+        // Fallback: draw a rectangle with a border
+        context.fillStyle = '#CCCCCC';
+        context.fillRect(this.x, this.y, this.width, this.height);
+        context.strokeStyle = '#000000';
+        context.strokeRect(this.x, this.y, this.width, this.height);
       }
       
-      // Draw ghost body with more saturated colors for better visibility
-      const radius = this.width / 2;
-      const centerX = this.x + radius;
-      const centerY = this.y + radius;
-      
-      // Draw a solid circular body for visibility
-      context.beginPath();
-      context.arc(centerX, centerY, radius-2, 0, Math.PI * 2);
-      context.fillStyle = ghostColor;
-      context.fill();
-      
-      // Draw eyes - make larger for better visibility
-      context.fillStyle = 'white';
-      context.beginPath();
-      const eyeRadius = Math.max(2, radius/4);
-      context.arc(centerX - radius/3, centerY - radius/4, eyeRadius, 0, Math.PI * 2);
-      context.arc(centerX + radius/3, centerY - radius/4, eyeRadius, 0, Math.PI * 2);
-      context.fill();
-      
-      // Draw pupils
-      context.fillStyle = 'black';
-      context.beginPath();
-      const pupilRadius = Math.max(1, eyeRadius/2);
-      context.arc(centerX - radius/3 + 1, centerY - radius/4, pupilRadius, 0, Math.PI * 2);
-      context.arc(centerX + radius/3 + 1, centerY - radius/4, pupilRadius, 0, Math.PI * 2);
-      context.fill();
-      
-      console.log("Drew fallback ghost:", 
-        `center=(${Math.round(centerX)},${Math.round(centerY)}), radius=${Math.round(radius)}, color=${ghostColor}`);
+      console.log(`Drawing ghost: type=${this.type}, dimensions=${this.width}x${this.height}, position=(${Math.round(this.x)}, ${Math.round(this.y)})`);
     }
     
     /**
