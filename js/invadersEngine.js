@@ -15,6 +15,8 @@ const InvadersEngine = (function () {
 
     function init(targetCanvas, gameAssets) {
         canvas = targetCanvas;
+        // Ensure canvas is properly sized
+        if (window.CanvasManager) window.CanvasManager.resize();
         ctx = canvas.getContext('2d');
         assets = gameAssets;
         reset();
@@ -100,9 +102,13 @@ const InvadersEngine = (function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw Player (Carlos)
-        const carlosImg = assets.player_idle || assets.player;
+        const carlosImg = assets.faceOpen || assets.player;
         if (carlosImg) {
             ctx.drawImage(carlosImg, player.x, player.y, player.width, player.height);
+        } else {
+            // Debug fallback
+            ctx.fillStyle = '#ffde59';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
         // Draw Bullets

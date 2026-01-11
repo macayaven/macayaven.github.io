@@ -62,9 +62,9 @@
     const assetUrls = {
       faceOpen: 'assets/face-open.png',
       faceClosed: 'assets/face-closed.png',
-      ghost_linkedin: 'assets/ghost_linkedin.png',
-      ghost_kaggle: 'assets/ghost_kaggle.png',
-      ghost_github: 'assets/ghost_github.png'
+      ghost_linkedin: 'assets/ghost_linkedin_monster.png',
+      ghost_kaggle: 'assets/ghost_kaggle_monster.png',
+      ghost_github: 'assets/ghost_github_monster.png'
     };
 
     // Show a loading message
