@@ -64,6 +64,11 @@
     // Save assets
     gameState.assets = assets;
 
+    // Set game-active class for UI hiding
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('game-active');
+    }
+
     // Initialize canvas
     try {
       gameState.context = CanvasManager.initialize();
@@ -792,6 +797,11 @@
     gameState.isGameOver = true;
     gameState.isRunning = false;
 
+    // Un-set game-active class to show UI
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('game-active');
+    }
+
     // Get ghost URL mapping
     const ghostUrls = {
       ghost_linkedin: 'https://www.linkedin.com/in/carlos-crespo-macaya/',
@@ -843,6 +853,12 @@
 
     // Reset game state
     gameState.isGameOver = false;
+
+    // Set game-active class
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('game-active');
+    }
+
     gameState.score = 0;
     gameState.difficultyLevel = 1;
     gameState.difficultyTimer = 0;

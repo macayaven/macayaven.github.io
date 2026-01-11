@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <header id="site-header">
         <div class="header-content neo-card">
             <h3>CARLOS CRESPO</h3>
             <nav class="social-links">
-                <a href="https://www.linkedin.com/in/carlos-crespo-macaya/" target="_blank" title="The Professional One">
+                <a href="https://www.linkedin.com/in/carlos-crespo-macaya/" target="_blank"
+                    title="The Professional One">
                     <img src="assets/linkedin_icon.svg" alt="LinkedIn" class="social-icon" />
                 </a>
                 <a href="https://github.com/macayaven" target="_blank" title="The Code One">
@@ -23,7 +26,8 @@
                 <a href="https://www.kaggle.com/macayaven" target="_blank" title="The Data One">
                     <img src="assets/kaggle_icon.svg" alt="Kaggle" class="social-icon" />
                 </a>
-                <button id="panic-btn" class="neo-btn" style="background: var(--accent-color); margin-left: 1rem;">PANIC!</button>
+                <button id="panic-btn" class="neo-btn"
+                    style="background: var(--accent-color); margin-left: 1rem;">PANIC!</button>
             </nav>
         </div>
     </header>
@@ -31,13 +35,13 @@
     <main>
         <div id="game-container" class="neo-card">
             <canvas id="gameCanvas"></canvas>
-            
+
             <div id="overlay-ui">
                 <div style="display: flex; justify-content: space-between; width: 100%;">
                     <div id="score" class="game-stat">SCORE: <span id="scoreValue">0</span></div>
                     <div id="difficulty" class="game-stat">LEVEL: <span id="difficultyValue">1</span></div>
                 </div>
-                
+
                 <div id="mobile-instructions" class="game-stat" style="align-self: center;">
                     SWIPE TO DODGE BUGS!
                 </div>
@@ -50,15 +54,18 @@
             </div>
         </div>
 
-        <section style="margin-top: 4rem; display: flex; gap: 2rem; padding: 2rem; flex-wrap: wrap; justify-content: center;">
+        <section id="content-sections"
+            style="margin-top: 4rem; display: flex; gap: 2rem; padding: 2rem; flex-wrap: wrap; justify-content: center;">
             <div class="neo-card" style="max-width: 400px; background: var(--secondary-color);">
                 <h4 style="font-weight: 900; margin-bottom: 1rem;">WHY THIS SITE?</h4>
-                <p>Because static resumes are for mortals. Carlos lives in the code, dodges bugs for breakfast, and occasionally gets eaten by ghosts. But mostly, it's about the vibes.</p>
+                <p>Because static resumes are for mortals. Carlos lives in the code, dodges bugs for breakfast, and
+                    occasionally gets eaten by ghosts. But mostly, it's about the vibes.</p>
             </div>
-            
+
             <div class="neo-card" style="max-width: 400px; background: var(--primary-color);">
                 <h4 style="font-weight: 900; margin-bottom: 1rem;">PRO TIP</h4>
-                <p id="funny-tip">If you press Arrow Up twice, nothing happens. But it makes you feel like you're trying.</p>
+                <p id="funny-tip">If you press Arrow Up twice, nothing happens. But it makes you feel like you're
+                    trying.</p>
             </div>
         </section>
     </main>
@@ -97,5 +104,5 @@
     <script src="js/gameEngine.js"></script>
     <script src="game.js"></script>
 </body>
-</html>
 
+</html>
