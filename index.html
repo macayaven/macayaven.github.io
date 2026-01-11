@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;900&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -33,6 +34,12 @@
     </header>
 
     <main>
+        <div class="game-selector">
+            <button class="selector-btn active" data-game="adventure">ADVENTURE</button>
+            <button class="selector-btn" data-game="invaders">INVADERS</button>
+            <button class="selector-btn" data-game="mind">CARLOS' MIND</button>
+        </div>
+
         <div id="game-container" class="neo-card">
             <canvas id="gameCanvas"></canvas>
 
@@ -102,6 +109,8 @@
     <script src="js/player.js"></script>
     <script src="js/ghost.js"></script>
     <script src="js/gameEngine.js"></script>
+    <script src="js/invadersEngine.js"></script>
+    <script src="js/mindEngine.js"></script>
     <script src="game.js"></script>
 </body>
 

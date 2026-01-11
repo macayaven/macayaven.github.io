@@ -145,8 +145,20 @@
     render();
 
     // Start the game loop
-    requestAnimationFrame(gameLoop);
+    gameState.animationId = requestAnimationFrame(gameLoop);
     console.log("Game started successfully!");
+  }
+
+  /**
+   * Stops the game loop and sets the game to not running.
+   */
+  function stop() {
+    gameState.isRunning = false;
+    if (gameState.animationId) {
+      cancelAnimationFrame(gameState.animationId);
+      gameState.animationId = null;
+      console.log("Game loop stopped.");
+    }
   }
 
   /**
@@ -579,7 +591,7 @@
 
     // Continue game loop
     if (!gameState.isGameOver) {
-      requestAnimationFrame(gameLoop);
+      gameState.animationId = requestAnimationFrame(gameLoop);
     }
   }
 
@@ -796,6 +808,10 @@
     console.log('gameOver triggered for ghost type: ' + ghost.type);
     gameState.isGameOver = true;
     gameState.isRunning = false;
+    if (gameState.animationId) {
+      cancelAnimationFrame(gameState.animationId);
+      gameState.animationId = null;
+    }
 
     // Un-set game-active class to show UI
     if (typeof document !== 'undefined') {
@@ -897,7 +913,7 @@
     if (!gameState.isRunning) {
       gameState.isRunning = true;
       gameState.lastFrameTime = performance.now();
-      requestAnimationFrame(gameLoop);
+      gameState.animationId = requestAnimationFrame(gameLoop);
       console.log("Game loop restarted");
     }
 
@@ -1031,6 +1047,7 @@
   // Export functions for use in browser or tests
   exports.initialize = initialize;
   exports.restart = restart;
+  exports.stop = stop;
   exports.isValidMove = isValidMove;
   exports.isEntityInValidPosition = isEntityInValidPosition;
 
