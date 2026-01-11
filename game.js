@@ -70,15 +70,21 @@
     // Show a loading message
     const gameContainer = document.getElementById('game-container');
     const loadingElement = document.createElement('div');
+    const isMobileDevice = window.innerWidth <= 480;
     loadingElement.id = 'loading';
     loadingElement.textContent = 'Gathering the Multiverse...';
-    loadingElement.style.position = 'absolute';
-    loadingElement.style.top = '50%';
-    loadingElement.style.left = '50%';
-    loadingElement.style.transform = 'translate(-50%, -50%)';
-    loadingElement.style.color = 'white';
-    loadingElement.style.fontSize = '24px';
-    loadingElement.style.fontWeight = '900';
+    loadingElement.style.cssText = `
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: ${isMobileDevice ? '16px' : '24px'};
+      font-weight: 900;
+      text-align: center;
+      padding: 1rem;
+      max-width: 80%;
+    `;
     gameContainer.appendChild(loadingElement);
     
     try {
@@ -116,7 +122,12 @@
       const mobileInstructions = document.getElementById('mobile-instructions');
       if (mobileInstructions) {
         mobileInstructions.classList.remove('hidden');
-        setTimeout(() => mobileInstructions.style.opacity = 0, 5000);
+        mobileInstructions.style.transition = 'opacity 0.5s ease-out';
+        // Fade out after 5 seconds, then hide completely
+        setTimeout(() => {
+          mobileInstructions.style.opacity = '0';
+          setTimeout(() => mobileInstructions.classList.add('hidden'), 500);
+        }, 5000);
       }
     }
     
