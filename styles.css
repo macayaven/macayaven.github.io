@@ -81,8 +81,8 @@ body {
 #site-header {
     width: 100%;
     padding: 1.5rem;
-    position: sticky;
-    top: 0;
+    /* Removed sticky position to prevent floating/overlap */
+    position: relative;
     z-index: 1000;
 }
 
@@ -404,8 +404,7 @@ canvas {
         max-width: 320px;
     }
 
- master
-    #game-over h2 {
+    master #game-over h2 {
         font-size: 2rem;
         margin-bottom: 0.75rem;
     }
@@ -422,7 +421,7 @@ canvas {
     }
 
     /* Info Cards Section */
-    main > section {
+    main>section {
         margin-top: 2rem !important;
         padding: 1rem !important;
         gap: 1rem !important;
@@ -534,7 +533,7 @@ canvas {
         font-size: 0.85rem;
     }
 
-    main > section {
+    main>section {
         margin-top: 1.5rem !important;
         padding: 0.75rem !important;
     }
@@ -630,7 +629,7 @@ canvas {
         max-height: 75vh;
     }
 
-    main > section {
+    main>section {
         margin-top: 1rem !important;
         flex-direction: row;
     }
@@ -736,10 +735,13 @@ body.game-active #content-sections {
 }
 
 @keyframes pulse-mobile {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         box-shadow: 2px 2px 0px #000;
     }
+
     50% {
         transform: scale(1.05);
         box-shadow: 3px 3px 0px #000;
@@ -747,14 +749,29 @@ body.game-active #content-sections {
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
 }
 
 @keyframes fade-out {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
 .floating {
