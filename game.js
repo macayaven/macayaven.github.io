@@ -247,12 +247,22 @@
     if (currentEngine && currentEngine !== GameEngine) {
       currentEngine.update();
       currentEngine.draw();
+
+      // Handle continuous touch movement for Invaders
+      if (currentEngine === InvadersEngine) {
+        if (touchState.left) InvadersEngine.move(-5);
+        if (touchState.right) InvadersEngine.move(5);
+      }
     }
     requestAnimationFrame(gameLoop);
   }
   gameLoop();
 
   // Handle Input for Invaders
+  // Handle Input for Invaders
+  const touchState = { left: false, right: false };
+  let lastShootTime = 0;
+
   window.addEventListener('keydown', (e) => {
     if (currentEngine === InvadersEngine) {
       if (e.key === 'ArrowLeft') InvadersEngine.move(-5);
@@ -260,5 +270,45 @@
       if (e.key === ' ') InvadersEngine.shoot();
     }
   });
+
+  // Mobile Touch Support for Invaders
+  const gameCanvas = document.getElementById('gameCanvas');
+  if (gameCanvas) {
+    gameCanvas.addEventListener('touchstart', (e) => {
+      if (currentEngine !== InvadersEngine) return;
+      e.preventDefault();
+      const rect = gameCanvas.getBoundingClientRect();
+      for (let i = 0; i < e.touches.length; i++) {
+        const x = e.touches[i].clientX - rect.left;
+        if (x < rect.width / 2) touchState.left = true;
+        else touchState.right = true;
+      }
+      // Tap to shoot (throttled)
+      const now = Date.now();
+      if (now - lastShootTime > 200) {
+        InvadersEngine.shoot();
+        lastShootTime = now;
+      }
+    }, { passive: false });
+
+    gameCanvas.addEventListener('touchend', (e) => {
+      if (currentEngine !== InvadersEngine) return;
+      e.preventDefault();
+      if (e.touches.length === 0) {
+        touchState.left = false;
+        touchState.right = false;
+      } else {
+        // Re-evaluate remaining touches
+        touchState.left = false;
+        touchState.right = false;
+        const rect = gameCanvas.getBoundingClientRect();
+        for (let i = 0; i < e.touches.length; i++) {
+          const x = e.touches[i].clientX - rect.left;
+          if (x < rect.width / 2) touchState.left = true;
+          else touchState.right = true;
+        }
+      }
+    }, { passive: false });
+  }
 
 })();
