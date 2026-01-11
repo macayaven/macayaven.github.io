@@ -1,8 +1,11 @@
 :root {
     --bg-color: #f0f0f0;
-    --primary-color: #ffde59; /* Cyber Yellow */
-    --secondary-color: #5ce1e6; /* Aqua */
-    --accent-color: #ff5757; /* Radical Red */
+    --primary-color: #ffde59;
+    /* Cyber Yellow */
+    --secondary-color: #5ce1e6;
+    /* Aqua */
+    --accent-color: #ff5757;
+    /* Radical Red */
     --glass-bg: rgba(255, 255, 255, 0.2);
     --border-width: 4px;
     --hard-shadow: 8px 8px 0px #000;
@@ -116,6 +119,113 @@ h3 {
     transform: rotate(15deg) scale(1.2);
 }
 
+/* Audio Pulse Button */
+.pulse-circle {
+    width: 24px;
+    height: 24px;
+    background-color: #2ecc71;
+    /* Green */
+    border-radius: 50%;
+    border: 3px solid #000;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0;
+    flex-shrink: 0;
+    outline: none;
+    box-shadow: 3px 3px 0px #000;
+    overflow: hidden;
+}
+
+.pulse-circle:hover {
+    transform: scale(1.2);
+    background-color: #27ae60;
+}
+
+.pulse-circle::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50%;
+    border: 2px solid #2ecc71;
+    animation: pulse 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    pointer-events: none;
+}
+
+.pulse-circle.playing {
+    background-color: #e74c3c;
+    /* Red when playing */
+}
+
+.pulse-circle.playing::after {
+    border-color: #e74c3c;
+    animation: pulse-active 0.8s ease-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    70% {
+        transform: scale(3);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-active {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* Game Selector */
+.game-selector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: -4px;
+    /* Align with game container border */
+    z-index: 5;
+    position: relative;
+}
+
+.selector-btn {
+    background: #fff;
+    border: var(--border-width) solid #000;
+    padding: 10px 20px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.selector-btn.active {
+    background: var(--primary-color);
+    transform: translateY(-4px);
+    box-shadow: 4px 4px 0px #000;
+    padding-bottom: 14px;
+}
+
+.selector-btn:not(.active):hover {
+    background: #eee;
+}
+
 /* Game Styles */
 #game-container {
     margin-top: 4rem;
@@ -175,6 +285,28 @@ canvas {
     color: var(--accent-color);
 }
 
+#game-start-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: var(--border-width) solid #000;
+    box-shadow: var(--hard-shadow);
+    padding: 3rem;
+    text-align: center;
+    z-index: 150;
+    width: 80%;
+    max-width: 500px;
+}
+
+#game-start-overlay h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
 /* Funny Components */
 #panic-overlay {
     position: fixed;
@@ -232,6 +364,8 @@ canvas {
         gap: 0.75rem;
     }
 
+<<<<<<< feature/multiverse-overhaul
+=======
     .social-icon {
         width: 28px;
         height: 28px;
@@ -271,6 +405,7 @@ canvas {
         max-width: 320px;
     }
 
+>>>>>>> master
     #game-over h2 {
         font-size: 2rem;
         margin-bottom: 0.75rem;
@@ -570,11 +705,35 @@ canvas {
     }
 }
 
+.hidden {
+    display: none !important;
+}
+
+/* Game Active State */
+body.game-active #content-sections {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+}
+
+#content-sections {
+    transition: all 0.5s ease-in-out;
+}
+
 /* Animations */
 @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
 }
 
 @keyframes pulse-mobile {
@@ -602,30 +761,3 @@ canvas {
 .floating {
     animation: float 3s ease-in-out infinite;
 }
-
-/* Utility Classes */
-.hidden {
-    display: none !important;
-}
-
-.fade-out {
-    animation: fade-out 0.5s ease-out forwards;
-}
-
-/* Safe area insets for notched phones */
-@supports (padding-top: env(safe-area-inset-top)) {
-    #site-header {
-        padding-top: max(1.5rem, env(safe-area-inset-top));
-        padding-left: max(1.5rem, env(safe-area-inset-left));
-        padding-right: max(1.5rem, env(safe-area-inset-right));
-    }
-
-    @media (max-width: 480px) {
-        #site-header {
-            padding-top: max(0.75rem, env(safe-area-inset-top));
-            padding-left: max(0.75rem, env(safe-area-inset-left));
-            padding-right: max(0.75rem, env(safe-area-inset-right));
-        }
-    }
-}
- 
