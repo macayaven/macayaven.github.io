@@ -76,30 +76,40 @@
     // Touch handlers for mobile support
     touchstartHandler = function(event) {
       if (event.touches.length === 1) {
+        const canvas = document.getElementById('gameCanvas');
+        const target = event.target;
+
+        // Only handle touch if it's on the canvas
+        // This allows buttons and other elements to receive their click events
+        if (target !== canvas && !canvas.contains(target)) {
+          return;
+        }
+
         // Record start position
         touchStartX = event.touches[0].clientX;
         touchStartY = event.touches[0].clientY;
         touchActive = true;
-        
-        // Prevent default to avoid scrolling and zooming
+
+        // Prevent default to avoid scrolling and zooming (only for canvas touches)
         event.preventDefault();
-        
+
         console.log("Touch start detected:", touchStartX, touchStartY);
       }
     };
     
     touchmoveHandler = function(event) {
+      // Only process if touch is active (started on canvas)
       if (!touchActive || event.touches.length !== 1) return;
-      
+
       // Prevent scrolling while playing
       event.preventDefault();
-      
+
       const touchX = event.touches[0].clientX;
       const touchY = event.touches[0].clientY;
-      
+
       const diffX = touchX - touchStartX;
       const diffY = touchY - touchStartY;
-      
+
       // Only process if movement is significant
       if (Math.abs(diffX) > MIN_SWIPE_DISTANCE || Math.abs(diffY) > MIN_SWIPE_DISTANCE) {
         // Determine primary direction
@@ -112,9 +122,9 @@
           direction.x = 0;
           direction.y = diffY > 0 ? 1 : -1;
         }
-        
+
         console.log("Touch direction set:", direction.x, direction.y);
-        
+
         // Update start position to continue movement if finger stays down
         touchStartX = touchX;
         touchStartY = touchY;
@@ -122,9 +132,12 @@
     };
     
     touchendHandler = function(event) {
+      // Only handle touch end if touch was active (started on canvas)
+      if (!touchActive) return;
+
       // Reset touch state
       touchActive = false;
-      
+
       // Don't reset direction immediately to allow more responsive controls
       // We'll keep the direction for a short time to make it feel more responsive
       setTimeout(() => {
@@ -133,7 +146,7 @@
           direction.y = 0;
         }
       }, 100);
-      
+
       event.preventDefault();
     };
     
