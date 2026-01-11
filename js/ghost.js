@@ -38,6 +38,9 @@
       } else if (this.type === 'ghost_github') {
         this.image = new Image();
         this.image.src = 'assets/ghost_github_monster.png';
+      } else if (this.type === 'ghost_hf') {
+        this.image = new Image();
+        this.image.src = 'assets/ghost_hf_monster.png';
       } else {
         // If type unrecognized, randomly choose ghost1.png or ghost2.png
         this.image = new Image();
@@ -231,7 +234,26 @@
 
       // If the image is loaded, draw it; otherwise, optionally draw a fallback rectangle
       if (this.image && this.image.complete && this.image.naturalWidth > 0) {
+        // Draw colored personality halo
+        context.save();
+        context.beginPath();
+        let haloColor = '#5ce1e6'; // Default Aqua
+        if (this.type === 'ghost_linkedin') haloColor = '#0077b5';
+        if (this.type === 'ghost_github') haloColor = '#333';
+        if (this.type === 'ghost_kaggle') haloColor = '#20beff';
+        if (this.type === 'ghost_hf') haloColor = '#FFD21E';
+
+        context.shadowBlur = 15;
+        context.shadowColor = haloColor;
+
+        // Draw a subtle circle behind
+        context.fillStyle = haloColor + '33'; // 20% opacity
+        context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.7, 0, Math.PI * 2);
+        context.fill();
+
+        // Draw image
         context.drawImage(this.image, this.x, this.y, this.width, this.height);
+        context.restore();
       } else {
         // Fallback: draw a rectangle with a border
         context.fillStyle = '#CCCCCC';

@@ -10,8 +10,14 @@
     const panicOverlay = document.getElementById('panic-overlay');
 
     if (panicBtn && panicOverlay) {
-      panicBtn.addEventListener('click', () => {
+      const togglePanic = () => {
         panicOverlay.classList.toggle('active');
+      };
+
+      panicBtn.addEventListener('click', togglePanic);
+      panicBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        togglePanic();
       });
 
       panicOverlay.addEventListener('click', () => {
@@ -64,7 +70,8 @@
       faceClosed: 'assets/face-closed.png',
       ghost_linkedin: 'assets/ghost_linkedin_monster.png',
       ghost_kaggle: 'assets/ghost_kaggle_monster.png',
-      ghost_github: 'assets/ghost_github_monster.png'
+      ghost_github: 'assets/ghost_github_monster.png',
+      ghost_hf: 'assets/ghost_hf_monster.png'
     };
 
     // Show a loading message

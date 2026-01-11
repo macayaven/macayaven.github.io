@@ -8,6 +8,15 @@ const MindEngine = (function () {
     let isRunning = false;
     let inputEl;
 
+    const clues = [
+        "I was born in a place where people eat 'churros'.",
+        "I once coded for 24 hours straight and only produced a 'Hello World'.",
+        "My favorite language is JavaScript... or Sarcasm.",
+        "I have a secret stash of rubber ducks.",
+        "I believe the answer to everything is 42, but for this it's much simpler.",
+        "Carlos is currently thinking about... nothing."
+    ];
+
     function init(targetCanvas) {
         canvas = targetCanvas;
         ctx = canvas.getContext('2d');
@@ -49,7 +58,8 @@ const MindEngine = (function () {
             }, 1000);
         } else {
             strikes++;
-            feedback.innerText = "WRONG. TRY AGAIN.";
+            const randomClue = clues[Math.floor(Math.random() * clues.length)];
+            feedback.innerText = `WRONG. CLUE: ${randomClue}`;
             feedback.style.color = "var(--accent-color)";
             updateStrikes();
             inputEl.value = '';

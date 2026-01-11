@@ -1,0 +1,8 @@
+// This would ideally be real SVGs, but for now I'll create simple<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="45" fill="#FFD21E" stroke="black" stroke-width="4"/>
+    <circle cx="35" cy="40" r="5" fill="black"/>
+    <circle cx="65" cy="40" r="5" fill="black"/>
+    <path d="M 30 65 Q 50 85 70 65" fill="none" stroke="black" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 20 50 Q 15 60 25 70 M 80 50 Q 85 60 75 70" fill="none" stroke="black" stroke-width="4" stroke-linecap="round"/>
+</svg>s
+// hugginface_icon.svg and scholar_icon.svg will be needed.

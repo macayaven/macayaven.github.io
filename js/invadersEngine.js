@@ -35,7 +35,7 @@ const InvadersEngine = (function () {
         const cols = 8;
         const padding = 20;
         const startX = 50;
-        const startY = 50;
+        const startY = canvas.height * 0.1; // 10% from top
 
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
@@ -44,7 +44,7 @@ const InvadersEngine = (function () {
                     y: startY + r * (40 + padding),
                     width: 40,
                     height: 40,
-                    type: r === 0 ? 'ghost_github' : (r < 2 ? 'ghost_linkedin' : 'ghost_kaggle')
+                    type: r === 0 ? 'ghost_github' : (r === 1 ? 'ghost_linkedin' : (r === 2 ? 'ghost_kaggle' : 'ghost_hf'))
                 });
             }
         }
@@ -72,7 +72,9 @@ const InvadersEngine = (function () {
 
         if (hitEdge) {
             enemyDirection *= -1;
-            enemies.forEach(e => e.y += 20);
+            // Limit descent to avoid instant death on small mobile screens
+            const descent = Math.min(20, canvas.height * 0.05);
+            enemies.forEach(e => e.y += descent);
         }
 
         // Collisions
