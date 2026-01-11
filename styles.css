@@ -368,5 +368,5 @@ body.game-active #content-sections {
 }
 
 .floating {
-    animation: float 3s ease-in-out infinite;
+    animation: float 5s ease-in-out infinite;
 }
