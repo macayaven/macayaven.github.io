@@ -30,7 +30,20 @@
     
     // Listen for window resize events
     window.addEventListener('resize', resize);
-    
+
+    // Listen for orientation changes on mobile
+    if (window.screen && window.screen.orientation) {
+      window.screen.orientation.addEventListener('change', function() {
+        // Small delay to ensure dimensions are updated
+        setTimeout(resize, 100);
+      });
+    } else {
+      // Fallback for older browsers
+      window.addEventListener('orientationchange', function() {
+        setTimeout(resize, 100);
+      });
+    }
+
     return context;
   }
   
@@ -39,16 +52,24 @@
    */
   function resize() {
     if (!canvas) return;
-    
-    // Calculate the available space with some margins
-    const maxWidth = window.innerWidth - 40; // 20px margin on each side
-    const maxHeight = window.innerHeight - 40; // 20px margin on top and bottom
-    
+
+    // Detect mobile device
+    const isMobile = window.innerWidth <= 768;
+
+    // Calculate margins based on device - tighter margins on mobile
+    const margin = isMobile ? 10 : 20;
+    const maxWidth = window.innerWidth - (margin * 2);
+    const maxHeight = window.innerHeight - (margin * 2);
+
     // Keep aspect ratio (4:3) for the game area
     const aspectRatio = 4 / 3;
-    
+
     let width, height;
-    
+
+    // Minimum dimensions for playability
+    const minWidth = 280;
+    const minHeight = 210;
+
     if (maxWidth / maxHeight > aspectRatio) {
       // Window is wider than our desired aspect ratio
       height = Math.min(maxHeight, 600); // Cap at 600px height
@@ -58,7 +79,11 @@
       width = Math.min(maxWidth, 800); // Cap at 800px width
       height = width / aspectRatio;
     }
-    
+
+    // Ensure minimum dimensions
+    width = Math.max(width, minWidth);
+    height = Math.max(height, minHeight);
+
     // Set the canvas dimensions
     canvas.width = Math.floor(width);
     canvas.height = Math.floor(height);
