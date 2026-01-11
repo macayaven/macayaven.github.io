@@ -364,8 +364,7 @@ canvas {
         gap: 0.75rem;
     }
 
-<<<<<<< feature/multiverse-overhaul
-=======
+
     .social-icon {
         width: 28px;
         height: 28px;
@@ -405,7 +404,7 @@ canvas {
         max-width: 320px;
     }
 
->>>>>>> master
+ master
     #game-over h2 {
         font-size: 2rem;
         margin-bottom: 0.75rem;

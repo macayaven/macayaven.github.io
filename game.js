@@ -52,7 +52,8 @@
       }, 8000);
     }
 
-    // 3. Mouse Follow Head (Mini Easter Egg)
+    // 3. Mouse Follow Head (Removed for stability)
+    /*
     const headerTitle = document.querySelector('header h3');
     if (headerTitle) {
       window.addEventListener('mousemove', (e) => {
@@ -61,6 +62,7 @@
         headerTitle.style.transform = `translate(${x}px, ${y}px)`;
       });
     }
+    */
 
     // 4. Audio Pulse Button
     const audioBtn = document.getElementById('audio-pulse-btn');
@@ -146,6 +148,11 @@
   let globalAssets = null;
 
   function startGame(assets) {
+    // Initialize CanvasManager to ensure correct dimensions
+    if (window.CanvasManager) {
+      window.CanvasManager.initialize();
+    }
+
     globalAssets = assets;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
