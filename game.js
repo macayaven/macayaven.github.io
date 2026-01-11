@@ -1,14 +1,64 @@
-/**
- * Main game initialization file.
- * This is the entry point that loads all assets and starts the game.
- */
-
+// ... existing code ...
 (function() {
-  // Wait for the DOM to be fully loaded
   document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing Pac-Face game...');
+    console.log('Initializing THE MULTIVERSE OF CARLOS...');
+
+    // --- FUNNY UI LOGIC ---
+
+    // 1. Panic Button
+    const panicBtn = document.getElementById('panic-btn');
+    const panicOverlay = document.getElementById('panic-overlay');
     
-    // Define the game assets to load
+    if (panicBtn && panicOverlay) {
+        panicBtn.addEventListener('click', () => {
+            panicOverlay.classList.toggle('active');
+        });
+        
+        panicOverlay.addEventListener('click', () => {
+            panicOverlay.classList.remove('active');
+        });
+
+        // Esc key to un-panic
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') panicOverlay.classList.remove('active');
+        });
+    }
+
+    // 2. Random Funny Tips
+    const funnyTips = [
+        "If you press Arrow Up twice, nothing happens. But it makes you feel like you're trying.",
+        "Carlos once fought a ghost in Kaggle. The results were... statistically significant.",
+        "Breaking: Local man still hasn't updated his LinkedIn profile picture from 2012.",
+        "This site is powered by pure caffeine and 4am regrets.",
+        "Warning: Swiping too fast might summon a senior developer to review your code.",
+        "Hint: The LinkedIn icon is the final boss. Good luck.",
+        "Fact: Carlos can speak 3 languages, but only if they are JavaScript, Python, and Sarcasm."
+    ];
+    
+    const tipElement = document.getElementById('funny-tip');
+    if (tipElement) {
+        setInterval(() => {
+            tipElement.style.opacity = 0;
+            setTimeout(() => {
+                tipElement.textContent = funnyTips[Math.floor(Math.random() * funnyTips.length)];
+                tipElement.style.opacity = 1;
+                tipElement.style.transition = 'opacity 0.5s';
+            }, 500);
+        }, 8000);
+    }
+
+    // 3. Mouse Follow Head (Mini Easter Egg)
+    const headerTitle = document.querySelector('header h3');
+    if (headerTitle) {
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            headerTitle.style.transform = `translate(${x}px, ${y}px)`;
+        });
+    }
+
+    // --- GAME INITIALIZATION ---
+    
     const assetUrls = {
       faceOpen: 'assets/face-open.png',
       faceClosed: 'assets/face-closed.png',
@@ -21,112 +71,60 @@
     const gameContainer = document.getElementById('game-container');
     const loadingElement = document.createElement('div');
     loadingElement.id = 'loading';
-    loadingElement.textContent = 'Loading game assets...';
+    loadingElement.textContent = 'Gathering the Multiverse...';
     loadingElement.style.position = 'absolute';
     loadingElement.style.top = '50%';
     loadingElement.style.left = '50%';
     loadingElement.style.transform = 'translate(-50%, -50%)';
     loadingElement.style.color = 'white';
     loadingElement.style.fontSize = '24px';
+    loadingElement.style.fontWeight = '900';
     gameContainer.appendChild(loadingElement);
     
-    // Add debug info to the console
-    console.log('Asset URLs to load:', assetUrls);
-    
     try {
-      // Try to load PNG assets first
       AssetManager.loadImages(assetUrls)
         .then(function(loadedAssets) {
-          console.log('PNG assets loaded successfully:', loadedAssets);
-          
-          // Verify that all assets were loaded correctly
-          let allAssetsValid = true;
-          Object.keys(loadedAssets).forEach(key => {
-            if (!loadedAssets[key] || !loadedAssets[key].width) {
-              console.error(`Asset ${key} failed to load properly`);
-              allAssetsValid = false;
-            }
-          });
-          
-          if (!allAssetsValid) {
-            throw new Error('Some assets did not load properly. Falling back to SVG.');
-          }
-          
-          // Remove the loading message
           gameContainer.removeChild(loadingElement);
-          
-          // Start the game with loaded assets
           startGame(loadedAssets);
         })
         .catch(function(error) {
-          console.warn('Error loading PNG assets, falling back to SVG:', error);
+          console.warn('Falling back to SVG:', error);
+          loadingElement.textContent = 'Generating Retro Vibe...';
           
-          // Loading message update
-          loadingElement.textContent = 'Using SVG placeholders...';
-          
-          // Use SVG assets instead
           setTimeout(function() {
-            console.log('Generating SVG assets');
-            // Generate SVG assets
             SVGAssets.generateSVGAssets()
               .then(svgAssets => {
-                console.log('SVG assets generated:', svgAssets);
-                
-                // Remove the loading message
                 gameContainer.removeChild(loadingElement);
-                
-                // Start the game with SVG assets
                 startGame(svgAssets);
               })
               .catch(error => {
-                console.error('Error generating SVG assets:', error);
-                loadingElement.textContent = 'Error loading game assets. Please refresh and try again.';
+                console.error('Error generating assets:', error);
+                loadingElement.textContent = 'Error: The Multiverse is unstable.';
                 loadingElement.style.color = 'red';
               });
-          }, 500); // Short delay to show the message
+          }, 500);
         });
     } catch (e) {
       console.error('Error initializing game:', e);
-      
-      // Show error message
-      loadingElement.textContent = 'Error initializing game. Please refresh and try again.';
-      loadingElement.style.color = 'red';
     }
   });
   
-  /**
-   * Start the game with the provided assets.
-   * @param {Object} assets - The loaded game assets.
-   */
   function startGame(assets) {
-    console.log('Starting game with assets:', assets);
-    
-    // Check if device is mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    console.log('Is mobile device:', isMobile);
     
-    // Show mobile instructions if on mobile device
     if (isMobile) {
       const mobileInstructions = document.getElementById('mobile-instructions');
       if (mobileInstructions) {
         mobileInstructions.classList.remove('hidden');
-        
-        // Hide instructions after 5 seconds
-        setTimeout(function() {
-          mobileInstructions.classList.add('hidden');
-        }, 5000);
+        setTimeout(() => mobileInstructions.style.opacity = 0, 5000);
       }
     }
     
-    // Initialize the game engine with the assets
     try {
       GameEngine.initialize(assets);
-      console.log('Game Engine initialized successfully');
     } catch (error) {
       console.error('Error initializing GameEngine:', error);
-      alert('Error starting game. Please check console for details and refresh to try again.');
     }
-    
-    console.log('Game started successfully!');
   }
-})(); 
+})();
+ 
