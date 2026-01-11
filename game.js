@@ -1,4 +1,3 @@
-// ... existing code ...
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
     console.log('Initializing THE MULTIVERSE OF CARLOS...');
@@ -60,6 +59,27 @@
         const x = (e.clientX / window.innerWidth - 0.5) * 20;
         const y = (e.clientY / window.innerHeight - 0.5) * 20;
         headerTitle.style.transform = `translate(${x}px, ${y}px)`;
+      });
+    }
+
+    // 4. Audio Pulse Button
+    const audioBtn = document.getElementById('audio-pulse-btn');
+    const audio = document.getElementById('saludo-audio');
+
+    if (audioBtn && audio) {
+      audioBtn.addEventListener('click', () => {
+        if (audio.paused) {
+          audio.currentTime = 0;
+          audio.play();
+          audioBtn.classList.add('playing');
+        } else {
+          audio.pause();
+          audioBtn.classList.remove('playing');
+        }
+      });
+
+      audio.addEventListener('ended', () => {
+        audioBtn.classList.remove('playing');
       });
     }
 
@@ -141,30 +161,53 @@
       });
     });
 
-    // Start with the default (Adventure)
-    switchMultiverse('adventure');
+    // Start with the default selected in the UI, but don't play yet
+    const activeBtn = document.querySelector('.selector-btn.active');
+    if (activeBtn) {
+      const gameName = activeBtn.dataset.game;
+      console.log(`Pre-selected ${gameName}. Waiting for START MISSION...`);
+    }
+
+    const startBtn = document.getElementById('start-game-btn');
+    const startOverlay = document.getElementById('game-start-overlay');
+
+    if (startBtn && startOverlay) {
+      startBtn.addEventListener('click', () => {
+        startOverlay.classList.add('hidden');
+        const activeBtn = document.querySelector('.selector-btn.active');
+        if (activeBtn) {
+          switchMultiverse(activeBtn.dataset.game, true);
+        }
+      });
+    }
   }
 
-  function switchMultiverse(gameName) {
-    console.log(`Switching to ${gameName}...`);
+  function switchMultiverse(gameName, actuallyStart = false) {
+    console.log(`Switching to ${gameName} (Auto-start: ${actuallyStart})...`);
     if (currentEngine && currentEngine.stop) currentEngine.stop();
 
-    // Reset standard UI
     const gameOver = document.getElementById('game-over');
+    const startOverlay = document.getElementById('game-start-overlay');
     if (gameOver) gameOver.classList.add('hidden');
-    document.body.classList.remove('game-active');
 
+    if (!actuallyStart && startOverlay) {
+      startOverlay.classList.remove('hidden');
+    }
+
+    document.body.classList.remove('game-active');
     const canvas = document.getElementById('gameCanvas');
 
-    if (gameName === 'adventure') {
-      currentEngine = GameEngine;
-      GameEngine.initialize(globalAssets);
-    } else if (gameName === 'invaders') {
-      currentEngine = InvadersEngine;
-      InvadersEngine.init(canvas, globalAssets);
-    } else if (gameName === 'mind') {
-      currentEngine = MindEngine;
-      MindEngine.init(canvas);
+    if (actuallyStart) {
+      if (gameName === 'adventure') {
+        currentEngine = GameEngine;
+        GameEngine.initialize(globalAssets);
+      } else if (gameName === 'invaders') {
+        currentEngine = InvadersEngine;
+        InvadersEngine.init(canvas, globalAssets);
+      } else if (gameName === 'mind') {
+        currentEngine = MindEngine;
+        MindEngine.init(canvas);
+      }
     }
   }
 

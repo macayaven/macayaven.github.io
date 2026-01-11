@@ -112,6 +112,81 @@ h3 {
     transform: rotate(15deg) scale(1.2);
 }
 
+/* Audio Pulse Button */
+.pulse-circle {
+    width: 24px;
+    height: 24px;
+    background-color: #2ecc71;
+    /* Green */
+    border-radius: 50%;
+    border: 3px solid #000;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0;
+    flex-shrink: 0;
+    outline: none;
+    box-shadow: 3px 3px 0px #000;
+    overflow: hidden;
+}
+
+.pulse-circle:hover {
+    transform: scale(1.2);
+    background-color: #27ae60;
+}
+
+.pulse-circle::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50%;
+    border: 2px solid #2ecc71;
+    animation: pulse 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    pointer-events: none;
+}
+
+.pulse-circle.playing {
+    background-color: #e74c3c;
+    /* Red when playing */
+}
+
+.pulse-circle.playing::after {
+    border-color: #e74c3c;
+    animation: pulse-active 0.8s ease-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    70% {
+        transform: scale(3);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-active {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
 /* Game Selector */
 .game-selector {
     display: flex;
@@ -201,6 +276,28 @@ canvas {
     font-size: 3rem;
     margin-bottom: 1rem;
     color: var(--accent-color);
+}
+
+#game-start-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: var(--border-width) solid #000;
+    box-shadow: var(--hard-shadow);
+    padding: 3rem;
+    text-align: center;
+    z-index: 150;
+    width: 80%;
+    max-width: 500px;
+}
+
+#game-start-overlay h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
 }
 
 /* Funny Components */

@@ -15,7 +15,15 @@
 <body>
     <header id="site-header">
         <div class="header-content neo-card">
-            <h3>CARLOS CRESPO</h3>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button id="audio-pulse-btn" class="pulse-circle" title="Listen to a greeting">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+                        style="width: 12px; height: 12px; position: absolute; top: 50%; left: 55%; transform: translate(-50%, -50%);">
+                        <polygon points="20,10 90,50 20,90" fill="white" />
+                    </svg>
+                </button>
+                <h3>CARLOS CRESPO</h3>
+            </div>
             <nav class="social-links">
                 <a href="https://www.linkedin.com/in/carlos-crespo-macaya/" target="_blank"
                     title="The Professional One">
@@ -60,6 +68,12 @@
                 </div>
             </div>
 
+            <div id="game-start-overlay">
+                <h2 class="floating">ENTER THE MULTIVERSE</h2>
+                <p style="font-weight: 900; margin-bottom: 2rem;">CHOOSE YOUR REALITY AND CLICK START</p>
+                <button id="start-game-btn" class="neo-btn">START MISSION</button>
+            </div>
+
             <div id="game-over" class="hidden">
                 <h2 class="floating">WASTED!</h2>
                 <p style="font-weight: 900; margin-bottom: 2rem;">FINAL SCORE: <span id="finalScore">0</span></p>
@@ -84,27 +98,24 @@
     </main>
 
     <div id="panic-overlay">
-        <div class="excel-mockup">
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <tr style="background: #e6e6e6; border-bottom: 1px solid #ccc;">
-                    <th style="border: 1px solid #ccc; padding: 4px;">A</th>
-                    <th style="border: 1px solid #ccc; padding: 4px;">B</th>
-                    <th style="border: 1px solid #ccc; padding: 4px;">C</th>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ccc; padding: 4px;">Q3 Revenue</td>
-                    <td style="border: 1px solid #ccc; padding: 4px;">$1.2M</td>
-                    <td style="border: 1px solid #ccc; padding: 4px;">Projected</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ccc; padding: 4px;">Cloud Spend</td>
-                    <td style="border: 1px solid #ccc; padding: 4px;">$450k</td>
-                    <td style="border: 1px solid #ccc; padding: 4px;">High!</td>
-                </tr>
-            </table>
-            <p style="margin-top: 20px; color: #666;">(Click anywhere to return to the fun)</p>
+        <div class="neo-card"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; max-width: 600px;">
+            <img src="assets/panic_screen.png" alt="All is good"
+                style="width: 100%; border: 4px solid #000; margin-bottom: 1rem;">
+            <h2 style="font-weight: 900; color: var(--accent-color);">REALLY PANICKING?</h2>
+            <p style="margin: 1rem 0; font-weight: 900;">(Click anywhere to return to the simulation)</p>
+            <div
+                style="font-family: monospace; background: #000; color: #0f0; padding: 1rem; text-align: left; font-size: 0.8rem; height: 100px; overflow: hidden;">
+                > INITIALIZING CALM_MODE.EXE...<br>
+                > DETECTING ELEVATED ADRENALINE...<br>
+                > INJECTING COFFEE DIRECTLY INTO MAINBOARD...<br>
+                > DEPLOYING FIRE EXTINGUISHER EMOTIONAL MODULE...<br>
+                > STATUS: EVERYTHING IS FINE (DEFINITELY)...
+            </div>
         </div>
     </div>
+
+    <audio id="saludo-audio" src="assets/audio/saludo.mp3"></audio>
 
     <!-- Scripts -->
     <script src="js/svgAssets.js"></script>
