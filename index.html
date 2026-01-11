@@ -3,42 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pac-Face Game</title>
+    <title>THE MULTIVERSE OF CARLOS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header id="site-header">
-        <div class="header-content">
-            <h3>Carlos says hi</h3>
-            <div class="social-links">
-                <a href="https://www.linkedin.com/in/carlos-crespo-macaya/" target="_blank">
+        <div class="header-content neo-card">
+            <h3>CARLOS CRESPO</h3>
+            <nav class="social-links">
+                <a href="https://www.linkedin.com/in/carlos-crespo-macaya/" target="_blank" title="The Professional One">
                     <img src="assets/linkedin_icon.svg" alt="LinkedIn" class="social-icon" />
                 </a>
-                <a href="https://github.com/macayaven" target="_blank">
+                <a href="https://github.com/macayaven" target="_blank" title="The Code One">
                     <img src="assets/github_icon.svg" alt="GitHub" class="social-icon" />
                 </a>
-                <a href="https://www.kaggle.com/macayaven" target="_blank">
+                <a href="https://www.kaggle.com/macayaven" target="_blank" title="The Data One">
                     <img src="assets/kaggle_icon.svg" alt="Kaggle" class="social-icon" />
                 </a>
-            </div>
+                <button id="panic-btn" class="neo-btn" style="background: var(--accent-color); margin-left: 1rem;">PANIC!</button>
+            </nav>
         </div>
     </header>
 
-    <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
-        <div id="score">Score: <span id="scoreValue">0</span></div>
-        <div id="difficulty">Level: <span id="difficultyValue">1</span></div>
-        <div id="game-over" class="hidden">
-            <h2>Game Over!</h2>
-            <p>Final Score: <span id="finalScore">0</span></p>
-            <button id="restart-button">Play Again</button>
+    <main>
+        <div id="game-container" class="neo-card">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="overlay-ui">
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <div id="score" class="game-stat">SCORE: <span id="scoreValue">0</span></div>
+                    <div id="difficulty" class="game-stat">LEVEL: <span id="difficultyValue">1</span></div>
+                </div>
+                
+                <div id="mobile-instructions" class="game-stat" style="align-self: center;">
+                    SWIPE TO DODGE BUGS!
+                </div>
+            </div>
+
+            <div id="game-over" class="hidden">
+                <h2 class="floating">WASTED!</h2>
+                <p style="font-weight: 900; margin-bottom: 2rem;">FINAL SCORE: <span id="finalScore">0</span></p>
+                <button id="restart-button" class="neo-btn">REVIVE CARLOS</button>
+            </div>
         </div>
-        <div id="mobile-instructions" class="hidden">
-            <p>Swipe to move</p>
+
+        <section style="margin-top: 4rem; display: flex; gap: 2rem; padding: 2rem; flex-wrap: wrap; justify-content: center;">
+            <div class="neo-card" style="max-width: 400px; background: var(--secondary-color);">
+                <h4 style="font-weight: 900; margin-bottom: 1rem;">WHY THIS SITE?</h4>
+                <p>Because static resumes are for mortals. Carlos lives in the code, dodges bugs for breakfast, and occasionally gets eaten by ghosts. But mostly, it's about the vibes.</p>
+            </div>
+            
+            <div class="neo-card" style="max-width: 400px; background: var(--primary-color);">
+                <h4 style="font-weight: 900; margin-bottom: 1rem;">PRO TIP</h4>
+                <p id="funny-tip">If you press Arrow Up twice, nothing happens. But it makes you feel like you're trying.</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="panic-overlay">
+        <div class="excel-mockup">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <tr style="background: #e6e6e6; border-bottom: 1px solid #ccc;">
+                    <th style="border: 1px solid #ccc; padding: 4px;">A</th>
+                    <th style="border: 1px solid #ccc; padding: 4px;">B</th>
+                    <th style="border: 1px solid #ccc; padding: 4px;">C</th>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ccc; padding: 4px;">Q3 Revenue</td>
+                    <td style="border: 1px solid #ccc; padding: 4px;">$1.2M</td>
+                    <td style="border: 1px solid #ccc; padding: 4px;">Projected</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ccc; padding: 4px;">Cloud Spend</td>
+                    <td style="border: 1px solid #ccc; padding: 4px;">$450k</td>
+                    <td style="border: 1px solid #ccc; padding: 4px;">High!</td>
+                </tr>
+            </table>
+            <p style="margin-top: 20px; color: #666;">(Click anywhere to return to the fun)</p>
         </div>
     </div>
 
-    <!-- Module Scripts -->
+    <!-- Scripts -->
     <script src="js/svgAssets.js"></script>
     <script src="js/assetManager.js"></script>
     <script src="js/canvasManager.js"></script>
@@ -50,3 +98,4 @@
     <script src="game.js"></script>
 </body>
 </html>
+
