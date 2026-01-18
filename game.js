@@ -66,19 +66,30 @@
 
     // 4. Audio Pulse Button
     const audioBtn = document.getElementById('audio-pulse-btn');
+    const cortazarBtn = document.getElementById('cortazar-audio-btn');
     const audio = document.getElementById('saludo-audio');
 
     if (audioBtn && audio) {
+      const playGreeting = () => {
+        audio.currentTime = 0;
+        audio.play();
+        audioBtn.classList.add('playing');
+      };
+
       audioBtn.addEventListener('click', () => {
         if (audio.paused) {
-          audio.currentTime = 0;
-          audio.play();
-          audioBtn.classList.add('playing');
+          playGreeting();
         } else {
           audio.pause();
           audioBtn.classList.remove('playing');
         }
       });
+
+      if (cortazarBtn) {
+        cortazarBtn.addEventListener('click', () => {
+          playGreeting();
+        });
+      }
 
       audio.addEventListener('ended', () => {
         audioBtn.classList.remove('playing');
