@@ -48,6 +48,11 @@
     </header>
 
     <main>
+        <section class="audio-cta neo-card">
+            <p class="audio-cta-text">Cortázar would wink at the buzz — hear what people are saying about Carlos.</p>
+            <button id="cortazar-audio-btn" class="neo-btn">PLAY THE CORTÁZAR WHISPER</button>
+        </section>
+
         <div class="game-selector">
             <button class="selector-btn active" data-game="adventure">ADVENTURE</button>
             <button class="selector-btn" data-game="invaders">INVADERS</button>
@@ -115,7 +120,11 @@
         </div>
     </div>
 
-    <audio id="saludo-audio" src="assets/audio/saludo.mp3"></audio>
+    <audio id="saludo-audio">
+        <source src="assets/audio/saludo.mp3" type="audio/mpeg">
+        <source src="https://drive.google.com/uc?export=download&id=1f1Cisboh2mpkuv7UYbhw--seeGPqnzti"
+            type="audio/mpeg">
+    </audio>
 
     <!-- Scripts -->
     <script src="js/svgAssets.js"></script>
