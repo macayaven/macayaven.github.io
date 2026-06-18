@@ -38,6 +38,15 @@ body {
     overflow-x: hidden;
 }
 
+/* Center every section at its own width, so a wide block (e.g. the two-up featured grid)
+   doesn't drag narrower blocks (the game) off-center via main's shrink-to-fit width. */
+main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 /* Neo-Brutalist Utility Classes */
 .neo-card {
     background: white;
