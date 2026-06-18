@@ -226,14 +226,30 @@ h3 {
     background: #eee;
 }
 
-#featured-lab {
+#featured-labs {
     width: min(1120px, calc(100% - 3rem));
     margin: 1rem auto 4rem;
-    background: var(--secondary-color);
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(210px, auto);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem;
-    align-items: center;
+    align-items: stretch;
+}
+
+.featured-lab {
+    min-width: 0;
+    background: var(--secondary-color); /* Brass Wings = aqua */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.featured-lab--alt {
+    background: var(--primary-color); /* Small Cuts = cyber-yellow */
+}
+
+.featured-lab--alt .neo-link-btn.primary-link {
+    background: var(--secondary-color); /* aqua CTA on the yellow card, for contrast */
 }
 
 .lab-label {
@@ -247,15 +263,15 @@ h3 {
     letter-spacing: 0.04em;
 }
 
-#featured-lab h2 {
-    margin-bottom: 0.75rem;
-    font-size: clamp(2.4rem, 7vw, 5rem);
+.featured-lab h2 {
+    margin-bottom: 0.5rem;
+    font-size: clamp(2rem, 4.5vw, 3.4rem);
     line-height: 0.9;
     font-weight: 900;
+    overflow-wrap: anywhere;
 }
 
-#featured-lab p {
-    max-width: 720px;
+.featured-lab p:not(.lab-label) {
     font-weight: 700;
     line-height: 1.45;
 }
@@ -264,7 +280,10 @@ h3 {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    justify-content: flex-end;
+}
+
+.featured-lab-actions .neo-link-btn {
+    width: 100%;
 }
 
 .neo-link-btn {
@@ -521,7 +540,7 @@ canvas {
         align-items: center;
     }
 
-    #featured-lab {
+    #featured-labs {
         grid-template-columns: 1fr;
         margin-bottom: 3rem !important;
     }
@@ -644,8 +663,12 @@ canvas {
         padding: 0.75rem !important;
     }
 
-    #featured-lab {
+    #featured-labs {
         width: calc(100% - 1.5rem);
+    }
+
+    .featured-lab h2 {
+        font-size: clamp(2.2rem, 9vw, 3.2rem);
     }
 
     .neo-card {
