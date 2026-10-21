@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Why vLLM 0.29 decoded 10% slower on my DGX Spark · Carlos Crespo Macaya</title>
+  <meta name="description" content="On my DGX Spark, moving from vLLM 0.28.0 to 0.29.0 reduced single-request decode speed for an NVFP4 Nemotron model from 76.6 to 69.2 tok/s. About 10%. I traced the drop to a deliberate safety check in FlashInfer.">
+  <meta name="author" content="Carlos Crespo Macaya">
+  <link rel="canonical" href="https://carloscrespomacaya.com/notes/gb10-nvfp4-regression/">
+  <meta property="og:title" content="Why vLLM 0.29 decoded 10% slower on my DGX Spark">
+  <meta property="og:description" content="On my DGX Spark, moving from vLLM 0.28.0 to 0.29.0 reduced single-request decode speed for an NVFP4 Nemotron model from 76.6 to 69.2 tok/s. About 10%. I traced the drop to a deliberate safety check in FlashInfer.">
+  <meta property="og:url" content="https://carloscrespomacaya.com/notes/gb10-nvfp4-regression/">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2026-10-21">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+  :root { --accent: #5fb98f; --bg: #0e0d0b; --panel: #161512; --fg: #f2efe9; --text: #dcd8d0; --muted: #9a958c; --line: rgba(255,255,255,0.09); }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  ::selection { background: #c9a24a; color: #0e0d0b; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  a { color: inherit; text-decoration: none; }
+  nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(16px, 5vw, 64px); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .brand { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.04em; color: var(--fg); display: flex; align-items: center; gap: 9px; }
+  .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .brand .muted { color: var(--muted); }
+  .navlinks { display: flex; align-items: center; gap: clamp(14px, 3vw, 30px); font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.03em; color: var(--muted); }
+  .navlinks a:hover { color: var(--fg); }
+  .navlinks .pill { color: var(--fg); border: 1px solid rgba(255,255,255,0.14); padding: 7px 14px; border-radius: 999px; }
+  article { max-width: 740px; margin: 0 auto; padding: clamp(48px, 9vh, 96px) clamp(16px, 5vw, 64px) clamp(48px, 8vh, 80px); font-size: 17px; line-height: 1.72; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent); margin: 0 0 18px; }
+  h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(30px, 5.2vw, 46px); line-height: 1.12; letter-spacing: -0.01em; color: var(--fg); margin: 0 0 16px; overflow-wrap: anywhere; }
+  .meta { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); margin: 0 0 40px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(22px, 3vw, 26px); line-height: 1.25; color: var(--fg); margin: 2.4em 0 0.7em; }
+  p { margin: 0 0 1.1em; }
+  strong { color: var(--fg); font-weight: 600; }
+  article a { color: var(--fg); border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); transition: border-color 0.2s; }
+  article a:hover { border-bottom-color: var(--accent); }
+  ul { margin: 0 0 1.2em; padding-left: 1.2em; }
+  li { margin: 0 0 0.55em; }
+  li::marker { color: var(--accent); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; color: var(--fg); overflow-wrap: anywhere; }
+  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 0 0 1.3em; overflow-x: auto; line-height: 1.55; }
+  pre code { background: none; border: 0; padding: 0; font-size: 13px; white-space: pre; overflow-wrap: normal; }
+  .table-wrap { overflow-x: auto; margin: 0 0 1.4em; border: 1px solid var(--line); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: 0.03em; color: var(--muted); background: var(--panel); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td:first-child { color: var(--fg); }
+  .disclosure { margin-top: 2.6em; padding-top: 22px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--muted); }
+  .back { display: inline-block; margin-top: 28px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); border: 0 !important; }
+  .back:hover { color: var(--fg); }
+  footer { border-top: 1px solid var(--line); padding: 32px clamp(16px, 5vw, 64px); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+  footer .ok { color: #c9a24a; }
+  @media (max-width: 600px) {
+    [data-navtext] { display: none; }
+    article { font-size: 16px; }
+    th, td { padding: 9px 11px; }
+  }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="brand" href="/"><span class="dot"></span>carlos<span class="muted">.crespo</span></a>
+    <div class="navlinks">
+      <a href="/#work" data-navtext="1">work</a>
+      <a href="/#path" data-navtext="1">path</a>
+      <a class="pill" href="/#contact">get in touch</a>
+    </div>
+  </nav>
+
+  <article>
+    <p class="eyebrow">NOTES · INFERENCE</p>
+    <h1>Why vLLM 0.29 decoded 10% slower on my DGX Spark</h1>
+<p class="meta">21 October 2026 · DGX Spark (GB10), vLLM, FlashInfer</p>
+<p>On my DGX Spark, moving from vLLM 0.28.0 to 0.29.0 reduced single-request decode speed for an NVFP4 Nemotron model from 76.6 to 69.2 tok/s. About 10%.</p>
+<p>I traced the drop to a deliberate safety check in FlashInfer. It excludes cuDNN from the available FP8 matrix multiplication backends on this GPU family unless cuDNN is new enough. Removing cuDNN from the older stack reproduced the slowdown. Another GB10 owner later tested the reverse: upgrading cuDNN restored performance on 0.29.0.</p>
+<p>The issue thread then uncovered a second problem on newer versions, which made upgrading cuDNN alone a poor workaround.</p>
+<h2>Reproducing the slowdown</h2>
+<p>I run NVIDIA’s Nemotron 3.5 Lightning (30B-A3B, NVFP4) with DSpark speculative decoding on vLLM 0.27.1. When saveriospeziali reported a roughly 16% slowdown between 0.28.0 and 0.29.0 in <a href="https://github.com/vllm-project/vllm/issues/59770" target="_blank" rel="noopener">vllm#59770</a>, I wanted to know whether I could upgrade.</p>
+<p>I already had the model and drafter at the exact revisions in the report, so I could reproduce the tests independently on a second GB10.</p>
+<p>I used the reporter’s server command and matched the container images by digest, using the arm64 entries of their multi-arch tags. The model and drafter revisions stayed pinned.</p>
+<p>Each measurement used one request at a time: about 90 prompt tokens, a fresh UUID at the front to prevent prefix-cache hits, and 512 output tokens. I ran one warmup, then took the median of five runs. The client is public: <a href="https://gist.github.com/macayaven/53ce5072020dcd3943ea0e40a45e89d6" target="_blank" rel="noopener">decode_rate.py</a>.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Image</th>
+<th style="text-align: right;">Without DSpark, greedy (tok/s)</th>
+<th style="text-align: right;">With DSpark (tok/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v0.28.0</td>
+<td style="text-align: right;">76.6</td>
+<td style="text-align: right;">135.3</td>
+</tr>
+<tr>
+<td>v0.29.0</td>
+<td style="text-align: right;">69.2 (−9.6%)</td>
+<td style="text-align: right;">124.5 (−8.0%)</td>
+</tr>
+<tr>
+<td>v0.30.0</td>
+<td style="text-align: right;">69.4</td>
+<td style="text-align: right;">120.4</td>
+</tr>
+</tbody>
+</table></div>
+<p>The slowdown reproduced, and 0.30.0 didn’t recover it. Without DSpark, my drop was smaller than the reporter’s 16%. I still haven’t explained that difference.</p>
+<p>Before looking at dependencies, I checked three other possible causes:</p>
+<ul>
+<li><strong>Model runner.</strong> My initial 0.28.0 runs used V1, while 0.29.0 used V2. Forcing each runner gave 77.1 tok/s on both in 0.28.0, and 69.5 on V1 versus 67.2 on V2 in 0.29.0. The runner switch didn’t explain the drop.</li>
+<li><strong>CPU cores.</strong> The GB10 has two kinds of Arm cores. Pinning 0.29.0 to either kind gave 68.7 tok/s.</li>
+<li><strong>GPU clocks.</strong> Telemetry during the runs showed SM clocks around 2.5 GHz and no throttle flags.</li>
+</ul>
+<h2>The warning that explained the backend change</h2>
+<p>Comparing the server logs, I found one warning in all eight 0.29.0 and 0.30.0 logs, and none of the seven 0.28.0 logs:</p>
+<pre><code class="language-text">Skipping cuDNN in bmm_fp8 auto candidates on SM12x: override_shape unavailable (cuDNN backend &lt; 9.23.1)
+</code></pre>
+<p>The model’s FP8 linear layers call FlashInfer’s <code>bmm_fp8</code>. At startup, it benchmarks several backends and caches a choice for each matrix shape.</p>
+<p>Those caches showed a clear change:</p>
+<ul>
+<li>On 0.28.0, FlashInfer chose cuDNN for 34 of 42 shapes, including every small shape with M ≤ 16, which are the shapes used during decode.</li>
+<li>On 0.29.0, it chose cuBLAS for 39 shapes and CUTLASS for three.</li>
+<li>Both images shipped cuDNN 9.20.</li>
+</ul>
+<p>vLLM 0.29.0 ships FlashInfer 0.6.18. In that release, <a href="https://github.com/flashinfer-ai/flashinfer/pull/4165" target="_blank" rel="noopener">FlashInfer PR #4165</a> excludes cuDNN from those candidates on SM12x when cuDNN is older than 9.23.1. The check avoids cuDNN workspace faults under CUDA graphs.</p>
+<p>That explained why the backend changed. I still needed to test whether it explained the performance drop.</p>
+<p>I went back to 0.28.0 and removed cuDNN from the same candidate list, using a small patch mounted read-only into the container.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">v0.28.0</th>
+<th style="text-align: right;">v0.28.0, cuDNN removed</th>
+<th style="text-align: right;">v0.29.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decode tok/s, without DSpark</td>
+<td style="text-align: right;">77.1</td>
+<td style="text-align: right;">69.7</td>
+<td style="text-align: right;">67.2–69.5</td>
+</tr>
+<tr>
+<td>FP8 backends chosen</td>
+<td style="text-align: right;">cuDNN 34, cuBLAS 6, CUTLASS 2</td>
+<td style="text-align: right;">cuBLAS 39, CUTLASS 3</td>
+<td style="text-align: right;">cuBLAS 39, CUTLASS 3</td>
+</tr>
+</tbody>
+</table></div>
+<p>Removing cuDNN reproduced both the slowdown and the backend selection.</p>
+<p>With DSpark, the patch reproduced about three quarters of the drop in estimated iterations per second. I haven’t explained the rest.</p>
+<p>I posted the measurements, patch, image digests and method on 5 October in <a href="https://github.com/vllm-project/vllm/issues/59770#issuecomment-5998167650" target="_blank" rel="noopener">this issue comment</a>.</p>
+<h2>What others found next</h2>
+<p>paintbrushv reproduced the slowdown on another GB10: 78.15 to 68.68 tok/s. They then ran the reverse test I had offered. With cuDNN 9.23.2, vLLM 0.29.0 reached 77.85 tok/s, almost matching the 78.15 tok/s baseline on 0.28.0.</p>
+<p>That independently confirmed the cause of the 0.29.0 slowdown.</p>
+<p>But hclsys and saveriospeziali found the opposite on newer stacks. With cuDNN 9.23.2, throughput on vLLM <code>main</code> fell from 65.3 to 43.1 tok/s. On 0.31.0, it fell from 60.5 to 40.8.</p>
+<p>waynehacking8 traced this second problem on an SM120 card. Since 0.30.0, vLLM tunes <code>bmm_fp8</code> on bucketed shapes at startup. Once cuDNN passes the version check, its tuned entries aren’t found at serving time. FlashInfer then falls back to a default CUTLASS tactic. This happens on every cold start.</p>
+<p>hclsys subsequently found the same fallback lines in their GB10 logs.</p>
+<p>A vLLM change that avoids this cache miss on a single GPU, <a href="https://github.com/vllm-project/vllm/pull/55671" target="_blank" rel="noopener">PR #55671</a>, merged on <code>main</code> on 17 October. It isn’t included in 0.32.0. A fix to the lookup in FlashInfer, <a href="https://github.com/flashinfer-ai/flashinfer/pull/5858" target="_blank" rel="noopener">PR #5858</a>, is still open.</p>
+<p>As of 21 October, nobody in the thread has reported GB10 measurements with these fixes.</p>
+<h2>What this means for upgrading</h2>
+<p>In my tests, the stock 0.29.0 and 0.30.0 images decoded this model about 10% slower than 0.28.0 without DSpark. saveriospeziali’s 0.31.0 result, down 10.9%, showed a similar drop.</p>
+<p>A newer cuDNN restored performance on 0.29.0 in paintbrushv’s test. On 0.31.0 and <code>main</code>, the reported results got substantially worse, most likely because of the separate lookup problem.</p>
+<p>So the cuDNN version check explains the original regression on 0.29.0, and a newer cuDNN reverses it there. Whether the newer stacks recover performance on GB10 with the lookup fixes still needs a measurement.</p>
+<h2>What helped with the investigation</h2>
+<p>Matching the reporter’s images by digest and publishing the client made the results comparable and gave other people a way to rerun the test.</p>
+<p>The most useful diagnostic detail was the saved autotune cache from each container start. Comparing warnings pointed me towards the change; the caches showed which backends were actually selected. The kernel names in the logs hadn’t made that clear.</p>
+<p>One thing misled me early: vLLM’s “Avg generation throughput” log line counts tokens over a 10-second logging window. I needed to measure decode speed from the streamed response.</p>
+<h2>Setup</h2>
+<p>DGX Spark (GB10, SM121), driver 580.178.04, Ubuntu 24.04.5, Docker 29.6.2.</p>
+<p>Target model: <code>nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4</code> at <code>e8f3c7c4</code>. Drafter: <code>NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4-DSpark</code> at <code>d10c6ff4</code>.</p>
+<p>Images: <code>vllm/vllm-openai:v0.28.0-aarch64</code>, <code>v0.29.0-aarch64</code> and <code>v0.30.0-aarch64</code>. The image digests are in the issue comment.</p>
+<p>Decode rate is <code>(completion tokens − 1) / (time of last streamed token − time of first streamed token)</code>.</p>
+<p class="disclosure">I ran every container and measurement on my own Spark and designed the tests. Claude Code and Codex helped with the client script, the diagnostic patch, the analysis and the wording. Claude drafted this article from my notes.</p>
+    <a class="back" href="/">← carloscrespomacaya.com</a>
+  </article>
+
+  <footer>
+    <span>© 2026 Carlos Crespo Macaya</span>
+    <span>status: <span class="ok">everything is fine (definitely)</span></span>
+  </footer>
+</body>
+</html>
