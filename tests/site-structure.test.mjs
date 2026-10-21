@@ -48,5 +48,7 @@ test("the vLLM GB10 note is linked from the Upstream card and links back home", 
   assert.match(note, /<title>Why vLLM 0\.29 decoded 10% slower on my DGX Spark · Carlos Crespo Macaya<\/title>/);
   assert.match(note, /<link rel="canonical" href="https:\/\/carloscrespomacaya\.com\/notes\/gb10-nvfp4-regression\/">/);
   assert.match(note, /<a class="brand" href="\/">/);
+  assert.match(note, /<meta property="og:image" content="https:\/\/carloscrespomacaya\.com\/notes\/gb10-nvfp4-regression\/og\.png">/);
+  await readFile(new URL("../notes/gb10-nvfp4-regression/og.png", import.meta.url));
   assert.doesNotMatch(note, /{{\s*[^}]+?\s*}}/);
 });

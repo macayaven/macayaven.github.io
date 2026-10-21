@@ -3,7 +3,7 @@
 Personal site, served by GitHub Pages from `master`.
 
 - `index.html`: the homepage, one static page with inline styles.
-- `notes/<slug>/index.html`: standalone write-ups in the homepage's style (first: `notes/gb10-nvfp4-regression/`).
+- `notes/<slug>/index.html`: standalone write-ups in the homepage's style (first: `notes/gb10-nvfp4-regression/`), each with an `og.png` (1200×627) for link previews. Build one from its Markdown with `uv run tools/build_note.py <source.md> notes/<slug>/index.html`; the script adds layout, never words.
 - `back-room/`: the original Pac-Face arcade, preserved. It loads `game.js`, `js/` and `assets/` from the site root.
 
 ## Tests
