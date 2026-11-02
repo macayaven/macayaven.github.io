@@ -52,3 +52,14 @@ test("the vLLM GB10 note is linked from the Upstream card and links back home", 
   await readFile(new URL("../notes/gb10-nvfp4-regression/og.png", import.meta.url));
   assert.doesNotMatch(note, /{{\s*[^}]+?\s*}}/);
 });
+
+test("the Ikigai Loop page is linked from Selected work and links back home", async () => {
+  const home = await readFile(rootIndex, "utf8");
+  const note = await readFile(new URL("../notes/ikigai-loop/index.html", import.meta.url), "utf8");
+
+  assert.match(home, /href=["'](?:\.\/)?notes\/ikigai-loop\/["']/);
+  assert.match(note, /<title>Ikigai Loop: an AI assistant I&#x27;m running on myself · Carlos Crespo Macaya<\/title>/);
+  assert.match(note, /<link rel="canonical" href="https:\/\/carloscrespomacaya\.com\/notes\/ikigai-loop\/">/);
+  assert.match(note, /<a class="brand" href="\/">/);
+  assert.doesNotMatch(note, /{{\s*[^}]+?\s*}}/);
+});

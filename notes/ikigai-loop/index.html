@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ikigai Loop: an AI assistant I&#x27;m running on myself · Carlos Crespo Macaya</title>
+  <meta name="description" content="Ikigai Loop is an AI assistant that suggests, five times a day, how to spend my next free hour, on my work goals or with my family, and that never shows me a number it can&#x27;t back with my own records. I&#x27;m running it on myself from 2 to 4 November 2026, for Meta&#x27;s hackathon. It looks at what I actually did, from my screen time, my calendar and my public GitHub activity.">
+  <meta name="author" content="Carlos Crespo Macaya">
+  <link rel="canonical" href="https://carloscrespomacaya.com/notes/ikigai-loop/">
+  <meta property="og:title" content="Ikigai Loop: an AI assistant I&#x27;m running on myself">
+  <meta property="og:description" content="Ikigai Loop is an AI assistant that suggests, five times a day, how to spend my next free hour, on my work goals or with my family, and that never shows me a number it can&#x27;t back with my own records. I&#x27;m running it on myself from 2 to 4 November 2026, for Meta&#x27;s hackathon. It looks at what I actually did, from my screen time, my calendar and my public GitHub activity.">
+  <meta property="og:url" content="https://carloscrespomacaya.com/notes/ikigai-loop/">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2026-11-02">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+  :root { --accent: #5fb98f; --bg: #0e0d0b; --panel: #161512; --fg: #f2efe9; --text: #dcd8d0; --muted: #9a958c; --line: rgba(255,255,255,0.09); }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  ::selection { background: #c9a24a; color: #0e0d0b; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  a { color: inherit; text-decoration: none; }
+  nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(16px, 5vw, 64px); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .brand { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.04em; color: var(--fg); display: flex; align-items: center; gap: 9px; }
+  .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .brand .muted { color: var(--muted); }
+  .navlinks { display: flex; align-items: center; gap: clamp(14px, 3vw, 30px); font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.03em; color: var(--muted); }
+  .navlinks a:hover { color: var(--fg); }
+  .navlinks .pill { color: var(--fg); border: 1px solid rgba(255,255,255,0.14); padding: 7px 14px; border-radius: 999px; }
+  article { max-width: 740px; margin: 0 auto; padding: clamp(48px, 9vh, 96px) clamp(16px, 5vw, 64px) clamp(48px, 8vh, 80px); font-size: 17px; line-height: 1.72; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent); margin: 0 0 18px; }
+  h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(30px, 5.2vw, 46px); line-height: 1.12; letter-spacing: -0.01em; color: var(--fg); margin: 0 0 16px; overflow-wrap: anywhere; }
+  .meta { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); margin: 0 0 40px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(22px, 3vw, 26px); line-height: 1.25; color: var(--fg); margin: 2.4em 0 0.7em; }
+  p { margin: 0 0 1.1em; }
+  strong { color: var(--fg); font-weight: 600; }
+  article a { color: var(--fg); border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); transition: border-color 0.2s; }
+  article a:hover { border-bottom-color: var(--accent); }
+  ul { margin: 0 0 1.2em; padding-left: 1.2em; }
+  li { margin: 0 0 0.55em; }
+  li::marker { color: var(--accent); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; color: var(--fg); overflow-wrap: anywhere; }
+  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 0 0 1.3em; overflow-x: auto; line-height: 1.55; }
+  pre code { background: none; border: 0; padding: 0; font-size: 13px; white-space: pre; overflow-wrap: normal; }
+  .table-wrap { overflow-x: auto; margin: 0 0 1.4em; border: 1px solid var(--line); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: 0.03em; color: var(--muted); background: var(--panel); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td:first-child { color: var(--fg); }
+  .disclosure { margin-top: 2.6em; padding-top: 22px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--muted); }
+  .back { display: inline-block; margin-top: 28px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); border: 0 !important; }
+  .back:hover { color: var(--fg); }
+  footer { border-top: 1px solid var(--line); padding: 32px clamp(16px, 5vw, 64px); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+  footer .ok { color: #c9a24a; }
+  @media (max-width: 600px) {
+    [data-navtext] { display: none; }
+    article { font-size: 16px; }
+    th, td { padding: 9px 11px; }
+  }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="brand" href="/"><span class="dot"></span>carlos<span class="muted">.crespo</span></a>
+    <div class="navlinks">
+      <a href="/#work" data-navtext="1">work</a>
+      <a href="/#path" data-navtext="1">path</a>
+      <a class="pill" href="/#contact">get in touch</a>
+    </div>
+  </nav>
+
+  <article>
+    <p class="eyebrow">NOTES · INFERENCE</p>
+    <h1>Ikigai Loop: an AI assistant I&#x27;m running on myself</h1>
+<p class="meta">2 November 2026 · Meta's Muse models, agent evals, a live run on my own data</p>
+<p>Ikigai Loop is an AI assistant that suggests, five times a day, how to spend my next free hour, on my work goals or with my family, and that never shows me a number it can't back with my own records. I'm running it on myself from 2 to 4 November 2026, for Meta's hackathon.</p>
+<p>It looks at what I actually did, from my screen time, my calendar and my public GitHub activity. It picks two options from a list of promises I wrote down myself and sends them to my phone as a Telegram card. Before a card goes out, plain code checks every figure in it against those records, and a wrong one is sent back. I choose with a tap, or correct the card with a voice note.</p>
+<h2>How it works</h2>
+<ul>
+<li><strong>Signals:</strong> screen time from ActivityWatch on my Mac, my two calendars and my public GitHub activity.</li>
+<li><strong>Facts:</strong> code turns those records into numbers for three 24-hour periods ending at the card's hour, called earlier, prior and last. Muse Glimmer, running on my own DGX Spark, adds facts of its own, each citing the records it came from.</li>
+<li><strong>Proposals:</strong> Muse Wonder gets only those facts and my written commitments, and proposes one commitment per goal for my next free hour, with its reasons.</li>
+<li><strong>The gate:</strong> plain code checks every number and source in those reasons before the card is sent. A wrong draft gets one retry; if the retry fails too, I get a labelled fallback with no reasons.</li>
+<li><strong>Me:</strong> I tap Take A, Take B or Neither now, or send a voice note to correct the card.</li>
+</ul>
+<p>What the gate never checks is whether a sentence is true in a wider sense. It checks numbers, sources and wording.</p>
+<p>Muse Code wrote the assistant's code, with the exceptions listed in the repo's <a href="https://github.com/macayaven/ikigai-loop/blob/main/CONTRIBUTIONS.md" target="_blank" rel="noopener">CONTRIBUTIONS.md</a>. The code and its evidence are at <a href="https://github.com/macayaven/ikigai-loop" target="_blank" rel="noopener">github.com/macayaven/ikigai-loop</a>. The same checks run in your browser, on your own agent's output: <a href="https://carloscrespomacaya.com/ikigai-loop/verify/" target="_blank" rel="noopener">the checker</a>.</p>
+<h2>Field notes</h2>
+<p>Newest first. Each note is one real thing the run showed, with its evidence.</p>
+<h3>2 November, 15:30 card: the right number, the wrong period</h3>
+<p>The second real card passed the gate with this sentence:</p>
+<blockquote>
+<p>Prs rose by 3 in the last period.</p>
+</blockquote>
+<p>The 3 was right. The sentence was wrong. On the same card, another sentence said pull requests were 27 in the last period, against 2 in the prior one: from the prior period to the last, they rose by 25.</p>
+<p>The 3 was the change since my previous card, at 13:30. Then the last period held 24 pull requests; at 15:30 it held 27. The gate checked that 3 matched the stored change since the last card, and that the sentence named the last period. "In the last period" names it, so the sentence passed.</p>
+<p>What I changed: first a test that fails on that exact sentence, then a rule. A change since the last card has to say "since the last card", and a phrase that puts the change inside a period is rejected. Muse Wonder is now taught that phrase, so cards don't start failing: on ten made-up cases, all ten drafts passed, and every since-last sentence said "since the last card". The fix is merged in <a href="https://github.com/macayaven/ikigai-loop/pull/43" target="_blank" rel="noopener">pull request #43</a>. It reaches the live cards on 3 November only if that night's checks pass.</p>
+<p>Known limit: the new rule also rejects one true but clumsy shape, "Pushes in the last period increased by 1 since the last card". The taught prompt wrote it in none of 252 claims.</p>
+<p><em>Claude Code drafted this page from my spec, and I edited and approved it. Every number comes from my assistant's stored cards or the public repo.</em></p>
+    <a class="back" href="/">← carloscrespomacaya.com</a>
+  </article>
+
+  <footer>
+    <span>© 2026 Carlos Crespo Macaya</span>
+    <span>status: <span class="ok">everything is fine (definitely)</span></span>
+  </footer>
+</body>
+</html>
