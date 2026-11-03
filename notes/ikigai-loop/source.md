@@ -22,6 +22,22 @@ Muse Code wrote the assistant's code, with the exceptions listed in the repo's [
 
 Newest first. Each note is one real thing the run showed, with its evidence.
 
+### 3 November, 11:30 card: "since the last card", on a real card
+
+This morning's card was the first to use yesterday's fix. Its first draft passed the gate, and its Why? reply ended with this sentence:
+
+> Prs rose by 11 since the last card.
+
+That's the shape the rule asks for. Yesterday at 15:30, the same kind of change came out as "Prs rose by 3 in the last period", and the gate let it through.
+
+The rule went live at 23:29 on 2 November. Its go/no-go ran all 54 made-up cases: 2 first drafts failed the gate, and both passed on the retry.
+
+A second rehearsal that night used a copy of my data and my real list of private terms. The new gate stopped ordinary card sentences as if they held a private term. The 11:30 card fell back to a plain card in 5 runs out of 5.
+
+What I changed: a private-term match made only of card words no longer counts. An exact match of the whole term still does. The same rehearsal then fell back in none of 5 runs, and the fix went live at 01:27, before any card used the 23:29 gate. It's merged in [pull request #58](https://github.com/macayaven/ikigai-loop/pull/58).
+
+Known limit: a private term made only of card words, written as separate words, isn't caught. And the gate checks the 11 against my records at card time; a separate audit recounts it from GitHub later.
+
 ### 2 November, 15:30 card: the right number, the wrong period
 
 The second real card passed the gate with this sentence:
