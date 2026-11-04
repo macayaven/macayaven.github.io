@@ -20,7 +20,19 @@ Muse Code wrote the assistant's code, with the exceptions listed in the repo's [
 
 ## Field notes
 
-Newest first. Each note is one real thing the run showed, with its evidence.
+Newest first. Each note is one real thing the build or the run showed, with its evidence.
+
+<h3 id="demo-2026-11-04">4 November, demo cut: the recording needs checks too</h3>
+
+The [first demo cut](https://youtu.be/CfMPpmqZ7NU) is 2 minutes 56 seconds long. It shows a voice correction, a card reaching my phone, and the wrong-period failure from the notes below. The checker game stays in too, including a trap the checker misses.
+
+The narration is my voice, cloned locally with Chatterbox from my own recording. I disclosed it on the end card and in the video description. The footage also distinguishes the real run, made-up tests and a recorded replay. A sentence rejected in a replay is evidence about the fixed gate; it doesn't undo the sentence that reached my phone.
+
+What I changed: I put this cut up as unlisted and made a first hackathon submission. That leaves me time to finish the recording before the deadline. I'm keeping revisions in the build that produces the video, so the final cut can be rebuilt and checked for private data.
+
+What still needs work: the phone and checker need more of the frame, the text cards need less text, and the editing labels need to go. The live-run placeholders need the frozen figures from [the run's report](https://github.com/macayaven/ikigai-loop/blob/main/docs/live-run.md). The failure and the checker's miss stay.
+
+Known limit: my voice tests also used the clone. In [my audio evaluation](https://github.com/macayaven/ikigai-loop/blob/main/docs/r9-audio.md), 50 of 60 edits came out right from audio, against 58 of 60 from text. Every audio miss asked a question instead of making a wrong edit. Those were clean synthetic takes, with no room noise, phone microphone or Telegram codec. I still need a broader test with voice notes recorded on the phone, including mixed English and Spanish.
 
 ### 3 November, 11:30 card: "since the last card", on a real card
 
@@ -52,4 +64,4 @@ What I changed: first a test that fails on that exact sentence, then a rule. A c
 
 Known limit: the new rule also rejects one true but clumsy shape, "Pushes in the last period increased by 1 since the last card". The taught prompt wrote it in none of 252 claims.
 
-*Claude Code drafted this page from my spec, and I edited and approved it. Every number comes from my assistant's stored cards or the public repo.*
+*Claude Code drafted the original page from my spec, and I edited and approved it. I used Codex to draft the 4 November field note from the demo and its evidence. Every number comes from my assistant's stored cards, the public repo or the video file.*
