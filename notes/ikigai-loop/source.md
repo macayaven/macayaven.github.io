@@ -24,6 +24,24 @@ The gate's checks also run in your browser, as a game: [Catch the AI](https://ca
 
 Newest first. Each note is one real thing the build or the run showed, with its evidence.
 
+<h3 id="checker-2026-11-04">4 November, the checker: what it checks, and how it changed</h3>
+
+The checker is the part of Ikigai Loop anyone can try. [The page](https://carloscrespomacaya.com/ikigai-loop/verify/) shows a card of numbers and a sentence an AI wrote about them. The card is the truth; the sentence is what gets checked.
+
+How it works: plain code, with no model, finds each number in the sentence and matches it to a card row by that row's own words. Then it compares the two. A sentence that says 12 deploys when the card says 7 fails. A number that matches no row fails too, so a sentence that renames a row fails safe.
+
+Why it exists: assistants quote your data back to you, get some numbers wrong, and sound just as sure. On my own cards, the same check stops a wrong number before the card reaches my phone. The page runs that Python in your browser, so you can try the idea with nothing to set up. On public data with known answers, it stopped 120 of 120 planted errors and passed 38 of 38 true claims ([domains](https://github.com/macayaven/ikigai-loop/blob/main/docs/domains.md)).
+
+How it changed:
+
+- 1 November: a command line and a first browser page that took JSON ([#19](https://github.com/macayaven/ikigai-loop/pull/19)).
+- 2 November: a form a stranger can fill in without JSON ([#33](https://github.com/macayaven/ikigai-loop/pull/33)). The card miss in the note below, and the rule that came from it ([#43](https://github.com/macayaven/ikigai-loop/pull/43)). The gate's hardening, brought into the page ([#51](https://github.com/macayaven/ikigai-loop/pull/51)).
+- 3 November: Catch the AI, a game where Muse Wonder hides traps in six sentences ([#61](https://github.com/macayaven/ikigai-loop/pull/61)). A consented version for a paid study, with its plan registered first ([#64](https://github.com/macayaven/ikigai-loop/pull/64)).
+- 4 November: a first-time user couldn't tell which side was the truth, and the line about the checker's limits read as generic. Now the page says the card is the truth, and each result says what it was checked against ([#75](https://github.com/macayaven/ikigai-loop/pull/75)).
+
+Known limit: it compares numbers with the card's names, nothing more. It can't tell whether a sentence is true. In the plain form it doesn't check units, time windows or words like rose and fell. One game round puts the right number in the wrong season, and the checker passes it, on purpose.
+
+
 <h3 id="demo-2026-11-04">4 November, demo cut: the recording needs checks too</h3>
 
 The [first demo cut](https://youtu.be/CfMPpmqZ7NU) is 2 minutes 56 seconds long. It shows a voice correction, a card reaching my phone, and the wrong-period failure from the notes below. The checker game stays in too, including a trap the checker misses.
@@ -66,4 +84,4 @@ What I changed: first a test that fails on that exact sentence, then a rule. A c
 
 Known limit: the new rule also rejects one true but clumsy shape, "Pushes in the last period increased by 1 since the last card". The taught prompt wrote it in none of 252 claims.
 
-*Claude Code drafted the original page from my spec, and I edited and approved it. I used Codex to draft the 4 November field note from the demo and its evidence. Every number comes from my assistant's stored cards, the public repo or the video file.*
+*Claude Code drafted the original page from my spec, and I edited and approved it. I used Codex to draft the 4 November demo note, and Claude Code the 4 November checker note, each from its evidence. Every number comes from my assistant's stored cards, the public repo or the video file.*
