@@ -14,9 +14,11 @@ It looks at what I actually did, from my screen time, my calendar and my public 
 - **The gate:** plain code checks every number and source in those reasons before the card is sent. A wrong draft gets one retry; if the retry fails too, I get a labelled fallback with no reasons.
 - **Me:** I tap Take A, Take B or Neither now, or send a voice note to correct the card.
 
-What the gate never checks is whether a sentence is true in a wider sense. It checks numbers, sources and wording.
+The gate checks numbers, sources and wording against my records. It doesn't check that a sentence is true. The misses so far, and what it still doesn't check, are on [the trust page](https://github.com/macayaven/ikigai-loop/blob/main/docs/TRUST.md).
 
-Muse Code wrote the assistant's code, with the exceptions listed in the repo's [CONTRIBUTIONS.md](https://github.com/macayaven/ikigai-loop/blob/main/CONTRIBUTIONS.md). The code and its evidence are at [github.com/macayaven/ikigai-loop](https://github.com/macayaven/ikigai-loop). The same checks run in your browser, on your own agent's output: [the checker](https://carloscrespomacaya.com/ikigai-loop/verify/).
+Muse Code wrote the assistant's code, with the exceptions listed in the repo's [CONTRIBUTIONS.md](https://github.com/macayaven/ikigai-loop/blob/main/CONTRIBUTIONS.md). The code and its evidence are at [github.com/macayaven/ikigai-loop](https://github.com/macayaven/ikigai-loop).
+
+The gate's checks also run in your browser, as a game: [Catch the AI](https://carloscrespomacaya.com/ikigai-loop/verify/). Muse Wonder wrote six sentences about everyday clutter and set traps in some. Can you beat the checker?
 
 ## Field notes
 
