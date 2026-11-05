@@ -63,3 +63,22 @@ test("the Ikigai Loop page is linked from Selected work and links back home", as
   assert.match(note, /<a class="brand" href="\/">/);
   assert.doesNotMatch(note, /{{\s*[^}]+?\s*}}/);
 });
+
+test("the Ikigai Loop write-up is linked from Selected work and links back home", async () => {
+  const home = await readFile(rootIndex, "utf8");
+  const note = await readFile(new URL("../notes/plain-code-checks/index.html", import.meta.url), "utf8");
+
+  assert.match(home, /href=["'](?:\.\/)?notes\/plain-code-checks\/["']/);
+  assert.match(note, /<title>My phone shows nothing until plain code checks the AI&#x27;s numbers · Carlos Crespo Macaya<\/title>/);
+  assert.match(note, /<link rel="canonical" href="https:\/\/carloscrespomacaya\.com\/notes\/plain-code-checks\/">/);
+  assert.match(note, /<a class="brand" href="\/">/);
+  assert.match(note, /<meta property="og:image" content="https:\/\/carloscrespomacaya\.com\/notes\/plain-code-checks\/og\.png">/);
+  await readFile(new URL("../notes/plain-code-checks/og.png", import.meta.url));
+  for (const img of ["card-2030.png", "check-1530.png", "catch-the-ai.gif"]) {
+    assert.match(note, new RegExp(`src="${img.replace(".", "\\.")}"`));
+    await readFile(new URL(`../notes/plain-code-checks/${img}`, import.meta.url));
+  }
+  assert.match(note, /Claude helped with an early draft/);
+  assert.doesNotMatch(note, /—/);
+  assert.doesNotMatch(note, /{{\s*[^}]+?\s*}}/);
+});

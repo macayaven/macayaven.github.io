@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My phone shows nothing until plain code checks the AI&#x27;s numbers · Carlos Crespo Macaya</title>
+  <meta name="description" content="Large language models can echo your own information back at you with subtle inaccuracies. The statements feel confident, the figures look plausible, and the errors slip by unnoticed. I learned this firsthand while trying to manage my limited free time between family and work.">
+  <meta name="author" content="Carlos Crespo Macaya">
+  <link rel="canonical" href="https://carloscrespomacaya.com/notes/plain-code-checks/">
+  <meta property="og:title" content="My phone shows nothing until plain code checks the AI&#x27;s numbers">
+  <meta property="og:description" content="Large language models can echo your own information back at you with subtle inaccuracies. The statements feel confident, the figures look plausible, and the errors slip by unnoticed. I learned this firsthand while trying to manage my limited free time between family and work.">
+  <meta property="og:url" content="https://carloscrespomacaya.com/notes/plain-code-checks/">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2026-11-05">
+  <meta property="og:image" content="https://carloscrespomacaya.com/notes/plain-code-checks/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="627">
+  <meta property="og:image:alt" content="My phone shows nothing until plain code checks the AI&#x27;s numbers">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+  :root { --accent: #5fb98f; --bg: #0e0d0b; --panel: #161512; --fg: #f2efe9; --text: #dcd8d0; --muted: #9a958c; --line: rgba(255,255,255,0.09); }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  ::selection { background: #c9a24a; color: #0e0d0b; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  a { color: inherit; text-decoration: none; }
+  nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(16px, 5vw, 64px); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .brand { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.04em; color: var(--fg); display: flex; align-items: center; gap: 9px; }
+  .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .brand .muted { color: var(--muted); }
+  .navlinks { display: flex; align-items: center; gap: clamp(14px, 3vw, 30px); font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.03em; color: var(--muted); }
+  .navlinks a:hover { color: var(--fg); }
+  .navlinks .pill { color: var(--fg); border: 1px solid rgba(255,255,255,0.14); padding: 7px 14px; border-radius: 999px; }
+  article { max-width: 740px; margin: 0 auto; padding: clamp(48px, 9vh, 96px) clamp(16px, 5vw, 64px) clamp(48px, 8vh, 80px); font-size: 17px; line-height: 1.72; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent); margin: 0 0 18px; }
+  h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(30px, 5.2vw, 46px); line-height: 1.12; letter-spacing: -0.01em; color: var(--fg); margin: 0 0 16px; overflow-wrap: anywhere; }
+  .meta { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); margin: 0 0 40px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+  h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(22px, 3vw, 26px); line-height: 1.25; color: var(--fg); margin: 2.4em 0 0.7em; }
+  p { margin: 0 0 1.1em; }
+  strong { color: var(--fg); font-weight: 600; }
+  article a { color: var(--fg); border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); transition: border-color 0.2s; }
+  article a:hover { border-bottom-color: var(--accent); }
+  ul { margin: 0 0 1.2em; padding-left: 1.2em; }
+  li { margin: 0 0 0.55em; }
+  li::marker { color: var(--accent); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; color: var(--fg); overflow-wrap: anywhere; }
+  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 0 0 1.3em; overflow-x: auto; line-height: 1.55; }
+  pre code { background: none; border: 0; padding: 0; font-size: 13px; white-space: pre; overflow-wrap: normal; }
+  .table-wrap { overflow-x: auto; margin: 0 0 1.4em; border: 1px solid var(--line); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: 0.03em; color: var(--muted); background: var(--panel); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td:first-child { color: var(--fg); }
+  .disclosure { margin-top: 2.6em; padding-top: 22px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--muted); }
+  .back { display: inline-block; margin-top: 28px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); border: 0 !important; }
+  .back:hover { color: var(--fg); }
+  footer { border-top: 1px solid var(--line); padding: 32px clamp(16px, 5vw, 64px); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+  footer .ok { color: #c9a24a; }
+  @media (max-width: 600px) {
+    [data-navtext] { display: none; }
+    article { font-size: 16px; }
+    th, td { padding: 9px 11px; }
+  }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="brand" href="/"><span class="dot"></span>carlos<span class="muted">.crespo</span></a>
+    <div class="navlinks">
+      <a href="/#work" data-navtext="1">work</a>
+      <a href="/#path" data-navtext="1">path</a>
+      <a class="pill" href="/#contact">get in touch</a>
+    </div>
+  </nav>
+
+  <article>
+    <p class="eyebrow">NOTES · INFERENCE</p>
+    <h1>My phone shows nothing until plain code checks the AI&#x27;s numbers</h1>
+<p class="meta">5 November 2026 · Nine days of building and three days of running an assistant on myself, mistakes and all</p>
+<p><em>Claude helped with an early draft and fact-checked every number against the repo.</em></p>
+<h2>The challenge</h2>
+<p>Large language models can echo your own information back at you with subtle inaccuracies. The statements feel confident, the figures look plausible, and the errors slip by unnoticed.</p>
+<p>I learned this firsthand while trying to manage my limited free time between family and work. Instead of another app for abstract life goals, I wanted a system that suggests one concrete action for my next free hour, something I can trust. For the Meta AI Developer Hackathon I built Ikigai Loop in nine days and ran it on myself for three.</p>
+<h2>Functionality</h2>
+<p>The assistant checks in five times a day, at 1:30, 3:30, 6:00, 8:30 and 10:30 p.m., offering me two choices for my next free hour: one for work and one for family. Each suggestion comes with evidence from my own records: screen time, calendars and GitHub activity. I can pick one with a tap or give a spoken update to refresh the recommendation.</p>
+<figure style="margin: 1.6em 0;"><img src="card-2030.png" alt="A real card on my phone: the Nov 3 20:30 card, one option for each promise, with the buttons I tap. Screen-time values are hidden." width="1280" height="720" style="width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line);"><figcaption style="font-size: 14px; color: var(--muted); margin-top: 8px;">Real card from Nov 3 at 8:30 p.m.; screen-time values hidden.</figcaption></figure>
+
+<p>Three Meta models power the system, each applied where it makes the most sense:</p>
+<ul>
+<li><strong>Muse Glimmer</strong> runs locally on my DGX Spark (GB10) and turns raw activity records into facts that cite their events. My raw records never leave the machine.</li>
+<li><strong>Muse Wonder</strong> writes the recommendation cards from those facts and my short list of promises.</li>
+<li><strong>Muse Spark</strong> turns a spoken correction into one typed edit to my list.</li>
+</ul>
+<h2>Core rule: plain code checks the numbers</h2>
+<p>I trust the assistant only because nothing reaches my phone until plain code, not a model, checks the figures, sources and time windows each sentence cites against my records. If something doesn't match, the card is blocked, and the model retries once.</p>
+<p>Why code? AI text can sound authoritative while misquoting data, and checking against the source catches it. A model reviewing another model would just shift the problem.</p>
+<figure style="margin: 1.6em 0;"><img src="check-1530.png" alt="The check on the Nov 2 15:30 card: the numbers in the card next to the same numbers in my records, and the card went out." width="1280" height="720" style="width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line);"><figcaption style="font-size: 14px; color: var(--muted); margin-top: 8px;">Verification on the Nov 2, 3:30 p.m. card.</figcaption></figure>
+
+<p>The <a href="https://carloscrespomacaya.com/ikigai-loop/verify/" target="_blank" rel="noopener">public demo</a> shows how the checker works. If a card says "November deploys: 7" but the sentence claims "Deploys reached 12 in November," the result is:</p>
+<pre><code class="language-text">FAIL. Caught a mistake.
+&quot;Deploys reached 12 in November.&quot;
+The sentence says 12; the card says 7.
+Code: L1B_METRIC_VALUE_MISMATCH
+</code></pre>
+<h2>The slip</h2>
+<p>On Nov 2, a card read "Prs rose by 3 in the last period." The number was correct, but it came from the wrong time window. That day, five more sentences made the same mistake, and the gate passed all six, because the numbers matched even though the windows didn't. I wrote a test that fails on that sentence first, then the rule that makes the gate catch it. Every miss I found is logged publicly in <a href="https://github.com/macayaven/ikigai-loop/blob/main/docs/TRUST.md" target="_blank" rel="noopener">TRUST.md</a>. One is still open: calendar busy time isn't treated as hours, so a false sentence giving it in minutes can pass.</p>
+<h2>Metrics and misses</h2>
+<p>Before going live, I <a href="https://github.com/macayaven/ikigai-loop/blob/main/docs/PREREG.md" target="_blank" rel="noopener">registered my predictions</a> and kept every outcome, successes and failures alike:</p>
+<ul>
+<li><strong>Live run (Nov 2 to 4):</strong> all 13 scheduled cards went out on time; 1 of 25 first drafts failed the gate and passed on retry. No fallback card was needed. (<a href="https://github.com/macayaven/ikigai-loop/blob/main/docs/live-run.md" target="_blank" rel="noopener">live-run.md</a>)</li>
+<li><strong>Known-answer datasets (UCI bike-share and home energy):</strong> the checker flagged 120 of 120 planted errors and accepted 38 of 38 correct statements. (<a href="https://github.com/macayaven/ikigai-loop/blob/main/docs/domains.md" target="_blank" rel="noopener">domains.md</a>)</li>
+<li><strong>Prompt test, same gate:</strong> Muse Wonder's first draft failed once in 54 cases with my prompt, against 44 times with a plain one. (<a href="https://github.com/macayaven/ikigai-loop/blob/main/docs/r1b.md" target="_blank" rel="noopener">r1b.md</a>)</li>
+<li><strong>Voice edits (60 frozen cases):</strong> Muse Spark got 58 right at a median 2.48 s; a literal matcher got 13. Spoken in my cloned voice, 50 of 60 came out right from audio against 58 from text, and every audio miss asked again instead of making a wrong edit. (<a href="https://github.com/macayaven/ikigai-loop/blob/main/docs/r9-audio.md" target="_blank" rel="noopener">r9-audio.md</a>)</li>
+<li><strong>Calendar titles (80 invented ones):</strong> Muse Glimmer labelled 77 correctly; a keyword rule, 51. (<a href="https://github.com/macayaven/ikigai-loop/blob/main/docs/glimmer-evidence.md" target="_blank" rel="noopener">glimmer-evidence.md</a>)</li>
+</ul>
+<p>Two outcomes went against me:</p>
+<ol>
+<li>Only 1 of the 7 checkable promises I accepted shows a completion in my records. Tapping a card is not doing the task.</li>
+<li>My predictive learner did worse than two simple baselines.</li>
+</ol>
+<h2>Public checker</h2>
+<p>Anyone can try the <a href="https://carloscrespomacaya.com/ikigai-loop/verify/" target="_blank" rel="noopener">browser-based checker</a>. It starts as a mini-game, Catch the AI, where you judge whether sample sentences match their cards. Some hide planted traps, and one round hides a trap the checker misses: the same kind of time-window error that got through on Nov 2.</p>
+<figure style="margin: 1.6em 0;"><img src="catch-the-ai.gif" alt="Two made-up rounds of Catch the AI: a sentence that matches its card, then a trap the checker catches." width="540" height="750" style="width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; border-radius: 10px; border: 1px solid var(--line);"><figcaption style="font-size: 14px; color: var(--muted); margin-top: 8px; text-align: center;">Sample rounds of Catch the AI.</figcaption></figure>
+
+<p>Below the game, you can test your own sentences against a card and see what each number was checked against. Opt-in saving helps me track where the checker fails.</p>
+<p>One early outside tester couldn't tell whether the sentence or the card was authoritative. By evening, the page made it explicit: the card is the source of truth.</p>
+<h2>Build process</h2>
+<p>I didn't handwrite the system. Muse Code, Meta's coding agent, wrote the code from written prompts, in Contributor mode on a public repo with synthetic data. Until Oct 31, I ran every session myself. From Nov 1, Claude Code wrote the prompts, ran the sessions and reviewed the results, while I made the calls. Outside reviews came from GPT models through Codex, Muse Wonder Full and Grok. <a href="https://github.com/macayaven/ikigai-loop/blob/main/CONTRIBUTIONS.md" target="_blank" rel="noopener">CONTRIBUTIONS.md</a> logs who wrote what, prompts included.</p>
+<p>Two safeguards protected the evaluations: test sets were frozen before any implementation session could read them, and the coding sessions never opened the held-out folder.</p>
+<p>An expensive day taught me to cap API spending. With no cap on the key, parallel sessions overspent in one day, so I revoked the key and moved every model call to my Muse Code subscription.</p>
+<h2>Privacy focus</h2>
+<p>Raw records stay local. Muse Glimmer's open weights make private inference possible. The event database, the card log and the bot token live on my DGX Spark, and the card-writing model only sees derived facts and my promises. The public checker runs in your browser, with optional saving. (<a href="https://github.com/macayaven/ikigai-loop/blob/main/docs/PRIVACY.md" target="_blank" rel="noopener">PRIVACY.md</a>)</p>
+<h2>Try it</h2>
+<p>If you work on evals, agents or model reliability, I'd value your attempt to break it.</p>
+<ul>
+<li>Play the checker: <a href="https://carloscrespomacaya.com/ikigai-loop/verify/" target="_blank" rel="noopener">carloscrespomacaya.com/ikigai-loop/verify</a></li>
+<li>The 3-minute demo: <a href="https://youtu.be/OWPNDV5kOsY" target="_blank" rel="noopener">youtu.be/OWPNDV5kOsY</a></li>
+<li>Code, tests and every miss: <a href="https://github.com/macayaven/ikigai-loop" target="_blank" rel="noopener">github.com/macayaven/ikigai-loop</a></li>
+</ul>
+<p><em>I'm Carlos Crespo Macaya. I build and evaluate AI systems, and Ikigai Loop is a personal project.</em></p>
+    <a class="back" href="/">← carloscrespomacaya.com</a>
+  </article>
+
+  <footer>
+    <span>© 2026 Carlos Crespo Macaya</span>
+    <span>status: <span class="ok">everything is fine (definitely)</span></span>
+  </footer>
+</body>
+</html>
