@@ -100,3 +100,10 @@ test("the Night-Chalk Drive note is linked from Selected work and includes verif
   assert.doesNotMatch(note, /{{\s*[^}]+?\s*}}/);
   assert.doesNotMatch(note, /[\u2014\u2013]/);
 });
+
+test("homepage links to Carlos's X profile in hero socials and contact section", async () => {
+  const html = await readFile(rootIndex, "utf8");
+
+  assert.match(html, /href="https:\/\/x\.com\/macayaven"[^>]*>X<\/a>/);
+  assert.match(html, /href="https:\/\/x\.com\/macayaven"[^>]*>X ↗<\/a>/);
+});
