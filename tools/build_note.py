@@ -22,19 +22,27 @@ src, out = Path(sys.argv[1]), Path(sys.argv[2])
 SLUG = out.parent.as_posix().strip("/") + "/"
 text = src.read_text(encoding="utf-8")
 
+eyebrow = "NOTES · INFERENCE"
+eyebrow_match = re.match(r"^\s*<!--\s*eyebrow:\s*(.+?)\s*-->\s*\n+", text)
+if eyebrow_match:
+    eyebrow = eyebrow_match.group(1).strip()
+    text = text[eyebrow_match.end():]
+
 title = re.match(r"# (.+)\n", text).group(1).strip()
 published = datetime.strptime(re.search(r"^\*(\d{1,2} \w+ \d{4}) ·", text, re.M).group(1), "%d %B %Y").date().isoformat()
 og_image = out.parent / "og.png"
 body_md = text.split("\n", 1)[1]
-paras = [p for p in body_md.split("\n\n") if p.strip() and not p.lstrip().startswith(("*", "#"))]
+paras = [p for p in body_md.split("\n\n") if p.strip() and not p.lstrip().startswith(("*", "#", "<", "```", "|"))]
 # Meta description: the article's own first two sentences of the opening paragraph and the next one.
-description = paras[0].strip() + " " + paras[1].strip().split(". ")[0] + "."
+first_s = re.sub(r"[`*]", "", paras[0].strip())
+second_s = re.sub(r"[`*]", "", paras[1].strip().split(". ")[0].rstrip(".")) + "."
+description = f"{first_s} {second_s}"
 
 html = markdown.markdown(body_md, extensions=["tables", "fenced_code"], output_format="html")
 
 # Byline and disclosure: same words, styled as meta lines.
 html = re.sub(r"^<p><em>(.+?)</em></p>", r'<p class="meta">\1</p>', html, count=1)
-html = re.sub(r"<p><em>(I ran every container.+?)</em></p>\s*$", r'<p class="disclosure">\1</p>', html, flags=re.S)
+html = re.sub(r"<p><em>(.+?)</em></p>\s*$", r'<p class="disclosure">\1</p>', html, flags=re.S)
 # Tables scroll inside the column on narrow screens instead of widening the page.
 html = html.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
 # External links open in a new tab, as on the homepage.
@@ -105,6 +113,12 @@ page = f"""<!DOCTYPE html>
   tbody tr:last-child td {{ border-bottom: 0; }}
   td:first-child {{ color: var(--fg); }}
   .disclosure {{ margin-top: 2.6em; padding-top: 22px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--muted); }}
+  .figure {{ margin: 1.8em 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }}
+  .figure img, .figure video {{ display: block; width: 100%; height: auto; background: #090807; }}
+  .figure figcaption {{ padding: 11px 16px; border-top: 1px solid var(--line); font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; color: var(--muted); }}
+  .diagram-wrap {{ margin: 1.8em 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; overflow-x: auto; }}
+  .diagram-wrap svg {{ display: block; width: 100%; height: auto; }}
+  .diagram-cap {{ padding-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; color: var(--muted); }}
   .back {{ display: inline-block; margin-top: 28px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); border: 0 !important; }}
   .back:hover {{ color: var(--fg); }}
   footer {{ border-top: 1px solid var(--line); padding: 32px clamp(16px, 5vw, 64px); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }}
@@ -127,7 +141,7 @@ page = f"""<!DOCTYPE html>
   </nav>
 
   <article>
-    <p class="eyebrow">NOTES · INFERENCE</p>
+    <p class="eyebrow">{escape(eyebrow)}</p>
     <h1>{escape(title)}</h1>
 {html}
     <a class="back" href="/">← carloscrespomacaya.com</a>

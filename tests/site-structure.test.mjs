@@ -82,3 +82,21 @@ test("the Ikigai Loop write-up is linked from Selected work and links back home"
   assert.doesNotMatch(note, /—/);
   assert.doesNotMatch(note, /{{\s*[^}]+?\s*}}/);
 });
+
+test("the Night-Chalk Drive note is linked from Selected work and includes verified media assets", async () => {
+  const home = await readFile(rootIndex, "utf8");
+  const note = await readFile(new URL("../notes/night-chalk-drive/index.html", import.meta.url), "utf8");
+
+  assert.match(home, /href=["'](?:\.\/)?notes\/night-chalk-drive\/["']/);
+  assert.match(note, /<title>Night-Chalk Drive: a 12-fps rotoscope pipeline from Meta Ray-Ban night footage · Carlos Crespo Macaya<\/title>/);
+  assert.match(note, /<link rel="canonical" href="https:\/\/carloscrespomacaya\.com\/notes\/night-chalk-drive\/">/);
+  assert.match(note, /<a class="brand" href="\/">/);
+  assert.match(note, /<meta property="og:image" content="https:\/\/carloscrespomacaya\.com\/notes\/night-chalk-drive\/og\.png">/);
+  assert.match(note, /<video\b/);
+  assert.match(note, /<svg\b/);
+  for (const rel of ["og.png", "debug-2x2.mp4", "tracker-comparison.jpg", "trilogy-palettes.jpg", "finale-3d-progression.jpg"]) {
+    await readFile(new URL(`../notes/night-chalk-drive/${rel}`, import.meta.url));
+  }
+  assert.doesNotMatch(note, /{{\s*[^}]+?\s*}}/);
+  assert.doesNotMatch(note, /[\u2014\u2013]/);
+});
