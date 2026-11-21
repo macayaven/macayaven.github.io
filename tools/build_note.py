@@ -44,7 +44,7 @@ html = markdown.markdown(body_md, extensions=["tables", "fenced_code"], output_f
 html = re.sub(r"^<p><em>(.+?)</em></p>", r'<p class="meta">\1</p>', html, count=1)
 html = re.sub(r"<p><em>(.+?)</em></p>\s*$", r'<p class="disclosure">\1</p>', html, flags=re.S)
 # Tables scroll inside the column on narrow screens instead of widening the page.
-html = html.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
+html = html.replace("<table>", '<div class="table-wrap" tabindex="0" role="region" aria-label="Data table"><table>').replace("</table>", "</table></div>")
 # External links open in a new tab, as on the homepage.
 html = re.sub(r'<a href="(https?://[^"]+)">', r'<a href="\1" target="_blank" rel="noopener">', html)
 
@@ -79,12 +79,12 @@ page = f"""<!DOCTYPE html>
   <style>
   :root {{ --accent: #5fb98f; --bg: #0e0d0b; --panel: #161512; --fg: #f2efe9; --text: #dcd8d0; --muted: #9a958c; --line: rgba(255,255,255,0.09); }}
   * {{ box-sizing: border-box; }}
-  html {{ scroll-behavior: smooth; }}
-  body {{ margin: 0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }}
+  html {{ scroll-behavior: smooth; scroll-padding-top: 76px; }}
+  body {{ margin: 0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-wrap: break-word; }}
   ::selection {{ background: #c9a24a; color: #0e0d0b; }}
   :focus-visible {{ outline: 2px solid var(--accent); outline-offset: 4px; }}
   a {{ color: inherit; text-decoration: none; }}
-  nav {{ position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(16px, 5vw, 64px); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }}
+  nav {{ position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(16px, 5vw, 64px); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }}
   .brand {{ font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.04em; color: var(--fg); display: flex; align-items: center; gap: 9px; }}
   .brand .dot {{ width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }}
   .brand .muted {{ color: var(--muted); }}
@@ -98,7 +98,7 @@ page = f"""<!DOCTYPE html>
   h2 {{ font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(22px, 3vw, 26px); line-height: 1.25; color: var(--fg); margin: 2.4em 0 0.7em; }}
   p {{ margin: 0 0 1.1em; }}
   strong {{ color: var(--fg); font-weight: 600; }}
-  article a {{ color: var(--fg); border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); transition: border-color 0.2s; }}
+  article a {{ color: var(--fg); border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); transition: border-color 0.2s; overflow-wrap: anywhere; }}
   article a:hover {{ border-bottom-color: var(--accent); }}
   ul {{ margin: 0 0 1.2em; padding-left: 1.2em; }}
   li {{ margin: 0 0 0.55em; }}
@@ -106,7 +106,7 @@ page = f"""<!DOCTYPE html>
   code {{ font-family: 'JetBrains Mono', monospace; font-size: 0.84em; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; color: var(--fg); overflow-wrap: anywhere; }}
   pre {{ background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 0 0 1.3em; overflow-x: auto; line-height: 1.55; }}
   pre code {{ background: none; border: 0; padding: 0; font-size: 13px; white-space: pre; overflow-wrap: normal; }}
-  .table-wrap {{ overflow-x: auto; margin: 0 0 1.4em; border: 1px solid var(--line); border-radius: 10px; }}
+  .table-wrap {{ overflow-x: auto; max-inline-size: 100%; margin: 0 0 1.4em; border: 1px solid var(--line); border-radius: 10px; }}
   table {{ width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }}
   th, td {{ padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }}
   th {{ font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: 0.03em; color: var(--muted); background: var(--panel); }}
@@ -116,8 +116,8 @@ page = f"""<!DOCTYPE html>
   .figure {{ margin: 1.8em 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }}
   .figure img, .figure video {{ display: block; width: 100%; height: auto; background: #090807; }}
   .figure figcaption {{ padding: 11px 16px; border-top: 1px solid var(--line); font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; color: var(--muted); }}
-  .diagram-wrap {{ margin: 1.8em 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; overflow-x: auto; }}
-  .diagram-wrap svg {{ display: block; width: 100%; height: auto; }}
+  .diagram-wrap {{ margin: 1.8em 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; overflow-x: auto; max-inline-size: 100%; }}
+  .diagram-wrap svg {{ display: block; width: 100%; max-width: 100%; height: auto; }}
   .diagram-cap {{ padding-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; color: var(--muted); }}
   .back {{ display: inline-block; margin-top: 28px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); border: 0 !important; }}
   .back:hover {{ color: var(--fg); }}

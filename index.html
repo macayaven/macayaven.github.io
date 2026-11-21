@@ -15,12 +15,63 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
 * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { margin: 0; background: #0e0d0b; }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+  body { margin: 0; background: #0e0d0b; overflow-wrap: break-word; }
   ::selection { background: #c9a24a; color: #0e0d0b; }
   @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
   @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   a { text-decoration: none; color: inherit; }
+  p a, li a { overflow-wrap: anywhere; }
+  .proof-strip { container: proof / inline-size; }
+  .proof-grid {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line, rgba(255,255,255,0.08));
+  }
+  .proof-grid > div {
+    min-width: 0;
+    background: var(--panel, #161512);
+  }
+  @container proof (inline-size < 360px) {
+    .proof-grid { grid-template-columns: 1fr; }
+  }
+  @container proof (inline-size >= 720px) {
+    .proof-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  .focus-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1px;
+    background: var(--line, rgba(255,255,255,0.08));
+    border: 1px solid var(--line, rgba(255,255,255,0.08));
+  }
+  .focus-grid > div { min-width: 0; }
+  .work-grid {
+    container: work-grid / inline-size;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 18px;
+  }
+  .work-grid > article { min-width: 0; }
+  @container work-grid (inline-size >= 618px) {
+    .work-card--featured { grid-column: span 2; }
+  }
+  .work-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+  .work-card-head > a,
+  .work-card-meta {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  [data-timeline] > div { min-width: 0; }
   @media (max-width: 600px) {
     [data-navtext] { display: none !important; }
     [data-timeline] { grid-template-columns: 1fr !important; gap: 4px !important; }
@@ -34,10 +85,10 @@
   </style>
 </head>
 <body>
-<div style="--accent: #5fb98f; --bg: #0e0d0b; --panel: #161512; --fg: #f2efe9; --muted: #9a958c; --line: rgba(255,255,255,0.09); background: var(--bg, #0e0d0b); color: var(--fg, #f2efe9); font-family: 'IBM Plex Sans', system-ui, sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidden;">
+<div style="--accent: #5fb98f; --bg: #0e0d0b; --panel: #161512; --fg: #f2efe9; --muted: #9a958c; --line: rgba(255,255,255,0.09); background: var(--bg, #0e0d0b); color: var(--fg, #f2efe9); font-family: 'IBM Plex Sans', system-ui, sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased;">
 
   <!-- NAV -->
-  <nav style="position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 18px clamp(20px, 5vw, 64px); background: color-mix(in srgb, var(--bg, #0e0d0b) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line, rgba(255,255,255,0.08));">
+  <nav style="position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 14px; padding: 18px clamp(20px, 5vw, 64px); background: color-mix(in srgb, var(--bg, #0e0d0b) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line, rgba(255,255,255,0.08));">
     <a href="#top" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.04em; color: var(--fg, #f2efe9); display: flex; align-items: center; gap: 9px;">
       <span style="width: 9px; height: 9px; border-radius: 50%; background: var(--accent, #c9a24a); box-shadow: 0 0 10px var(--accent, #c9a24a);"></span>
       carlos<span style="color: var(--muted, #9a958c);">.crespo</span>
@@ -55,7 +106,7 @@
     <div style="position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, var(--line, rgba(255,255,255,0.07)) 1px, transparent 0); background-size: 34px 34px; mask-image: radial-gradient(ellipse 80% 70% at 30% 20%, #000 30%, transparent 75%); pointer-events: none;"></div>
     <div style="position: relative;">
       <div style="display: inline-flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent, #c9a24a); margin-bottom: 30px;">
-        <span style="width: 22px; height: 1px; background: var(--accent, #c9a24a);"></span>
+        <span style="width: 22px; height: 1px; flex-shrink: 0; background: var(--accent, #c9a24a);"></span>
         Senior AI Engineer · LLM agents · Evaluation
       </div>
 
@@ -67,7 +118,7 @@
         Senior AI Engineer at HP's AI Center of Excellence. Before that I was the first hire at Methinks, a stroke-imaging startup, and stayed eight years, from no product to one that was CE marked and deployed in hospitals. I trust numbers I can explain more than numbers that look good.
       </p>
 
-      <div style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: var(--fg, #f2efe9); margin-bottom: 38px; height: 20px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: var(--fg, #f2efe9); margin-bottom: 38px; min-height: 20px; line-height: 1.5;">
         <span style="color: var(--muted, #9a958c);">&gt;&nbsp;</span>building LLM agents and evals at HP's AI Center of Excellence<span style="display: inline-block; width: 8px; height: 15px; background: var(--accent, #c9a24a); margin-left: 3px; transform: translateY(2px); animation: blink 1.1s step-end infinite;"></span>
       </div>
 
@@ -90,21 +141,21 @@
   </header>
 
   <!-- PROOF STRIP -->
-  <section style="border-top: 1px solid var(--line, rgba(255,255,255,0.08)); border-bottom: 1px solid var(--line, rgba(255,255,255,0.08)); background: var(--panel, #161512);">
-    <div style="max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-      <div style="padding: 30px clamp(20px, 4vw, 40px); border-right: 1px solid var(--line, rgba(255,255,255,0.08));">
+  <section class="proof-strip" style="border-top: 1px solid var(--line, rgba(255,255,255,0.08)); border-bottom: 1px solid var(--line, rgba(255,255,255,0.08)); background: var(--panel, #161512);">
+    <div class="proof-grid">
+      <div style="padding: 30px clamp(16px, 4vw, 40px);">
         <div style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(30px, 4vw, 44px); font-weight: 600; letter-spacing: -0.02em; color: var(--accent, #c9a24a);">2×</div>
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--muted, #9a958c); margin-top: 6px; line-height: 1.5;">Kaggle RSNA gold<br>with the team</div>
       </div>
-      <div style="padding: 30px clamp(20px, 4vw, 40px); border-right: 1px solid var(--line, rgba(255,255,255,0.08));">
+      <div style="padding: 30px clamp(16px, 4vw, 40px);">
         <div style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(30px, 4vw, 44px); font-weight: 600; letter-spacing: -0.02em; color: var(--accent, #c9a24a);">CE + FDA</div>
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--muted, #9a958c); margin-top: 6px; line-height: 1.5;">cybersecurity certified<br>medical imaging</div>
       </div>
-      <div style="padding: 30px clamp(20px, 4vw, 40px); border-right: 1px solid var(--line, rgba(255,255,255,0.08));">
+      <div style="padding: 30px clamp(16px, 4vw, 40px);">
         <div style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(30px, 4vw, 44px); font-weight: 600; letter-spacing: -0.02em; color: var(--accent, #c9a24a);"><em>Stroke</em></div>
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--muted, #9a958c); margin-top: 6px; line-height: 1.5;">peer-reviewed<br>clinical validation (AHA)</div>
       </div>
-      <div style="padding: 30px clamp(20px, 4vw, 40px);">
+      <div style="padding: 30px clamp(16px, 4vw, 40px);">
         <div style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(30px, 4vw, 44px); font-weight: 600; letter-spacing: -0.02em; color: var(--accent, #c9a24a);">8 years</div>
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--muted, #9a958c); margin-top: 6px; line-height: 1.5;">at a startup,<br>from first hire</div>
       </div>
@@ -117,7 +168,7 @@
       <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent, #c9a24a);">01</span>
       <h2 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(26px, 3.4vw, 40px); letter-spacing: -0.02em; margin: 0;">What I work on</h2>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--line, rgba(255,255,255,0.08)); border: 1px solid var(--line, rgba(255,255,255,0.08));">
+    <div class="focus-grid">
       <div style="background: var(--bg, #0e0d0b); padding: 36px clamp(24px, 3vw, 36px); transition: background 0.25s;">
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent, #c9a24a); margin-bottom: 18px;">/agents</div>
         <h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 21px; margin: 0 0 12px;">Agentic systems</h3>
@@ -144,10 +195,10 @@
     </div>
     <p style="color: var(--muted, #9a958c); font-size: 16px; max-width: 56ch; margin: 0 0 48px; padding-left: 30px;">Some of it is serious, some of it is for fun.</p>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px;">
+    <div class="work-grid">
 
             <article style="border: 1px solid var(--line, rgba(255,255,255,0.1)); border-radius: 14px; padding: clamp(24px, 2.5vw, 32px); background: var(--bg, #0e0d0b); display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
-        <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 14px;">
+        <div class="work-card-head" style="margin-bottom: 14px;">
           <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent, #c9a24a);">META HACKATHON · AGENT EVALS</div>
           <a href="notes/ikigai-loop/" style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted, #9a958c);">read ↗</a>
         </div>
@@ -155,10 +206,10 @@
         <p style="color: var(--muted, #9a958c); font-size: 14.5px; line-height: 1.6; margin: 0;">An AI assistant I'm running on myself from 2 to 4 November 2026. Five times a day it suggests how to spend my next free hour, and plain code checks every number on its cards against my own records. <a href="notes/ikigai-loop/" style="color: inherit; border-bottom: 1px solid var(--line, rgba(255,255,255,0.25));">Field notes from the run</a>, <a href="notes/plain-code-checks/" style="color: inherit; border-bottom: 1px solid var(--line, rgba(255,255,255,0.25));">the full write-up</a>, and <a href="https://carloscrespomacaya.com/ikigai-loop/verify/" target="_blank" rel="noopener" style="color: inherit; border-bottom: 1px solid var(--line, rgba(255,255,255,0.25));">a checker</a> you can run on your own agent.</p>
       </article>
 
-<article style="grid-column: span 2; border: 1px solid var(--line, rgba(255,255,255,0.1)); border-radius: 14px; padding: clamp(28px, 3vw, 40px); background: var(--panel, #161512); display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+<article class="work-card--featured" style="border: 1px solid var(--line, rgba(255,255,255,0.1)); border-radius: 14px; padding: clamp(28px, 3vw, 40px); background: var(--panel, #161512); display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
+        <div class="work-card-head" style="margin-bottom: 16px;">
           <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent, #c9a24a);">HEALTHCARE AI · FIRST HIRE</div>
-          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted, #9a958c);">2016–2024</div>
+          <div class="work-card-meta" style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted, #9a958c);">2016–2024</div>
         </div>
         <h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(22px, 2.6vw, 30px); margin: 0 0 14px; letter-spacing: -0.02em;">Methinks AI: stroke detection from CT</h3>
         <p style="color: var(--muted, #9a958c); font-size: 15.5px; line-height: 1.65; margin: 0 0 20px; max-width: 70ch;">I joined as the first hire, before there was a product, and stayed eight years. We built MethinksLVO and MethinksNCCT, deep-learning detection of large-vessel occlusion and intracranial hemorrhage on non-contrast CT, took them through CE marking and FDA cybersecurity certification, deployed them in hospitals and published a multicenter clinical validation in <em>Stroke</em> (AHA).</p>
@@ -176,7 +227,7 @@
       </article>
 
       <article style="border: 1px solid var(--line, rgba(255,255,255,0.1)); border-radius: 14px; padding: clamp(24px, 2.5vw, 32px); background: var(--bg, #0e0d0b); display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
-        <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 14px;">
+        <div class="work-card-head" style="margin-bottom: 14px;">
           <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent, #c9a24a);">OPEN SOURCE · EVALS &amp; INFERENCE</div>
           <a href="https://github.com/UKGovernmentBEIS/inspect_ai/pull/5799" target="_blank" style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted, #9a958c);">PR ↗</a>
         </div>
@@ -185,7 +236,7 @@
       </article>
 
       <article style="border: 1px solid var(--line, rgba(255,255,255,0.1)); border-radius: 14px; padding: clamp(24px, 2.5vw, 32px); background: var(--bg, #0e0d0b); display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
-        <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 14px;">
+        <div class="work-card-head" style="margin-bottom: 14px;">
           <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent, #c9a24a);">VISION &amp; AGENTS · NOTE</div>
           <a href="notes/night-chalk-drive/" style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted, #9a958c);">read ↗</a>
         </div>
@@ -200,7 +251,7 @@
       </article>
 
       <article style="border: 1px solid var(--line, rgba(255,255,255,0.1)); border-radius: 14px; padding: clamp(24px, 2.5vw, 32px); background: var(--bg, #0e0d0b); display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
-        <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 14px;">
+        <div class="work-card-head" style="margin-bottom: 14px;">
           <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent, #c9a24a);">PERSONAL · LIT × NLP</div>
           <a href="https://medium.com/@macayaven" target="_blank" style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted, #9a958c);">read ↗</a>
         </div>
@@ -209,7 +260,7 @@
       </article>
 
       <article style="border: 1px solid var(--line, rgba(255,255,255,0.1)); border-radius: 14px; padding: clamp(24px, 2.5vw, 32px); background: var(--bg, #0e0d0b); display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
-        <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 14px;">
+        <div class="work-card-head" style="margin-bottom: 14px;">
           <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent, #c9a24a);">OFF-GRID AI · PLAY</div>
           <a href="https://macayaven-small-cuts.hf.space" target="_blank" style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted, #9a958c);">try it ↗</a>
         </div>
@@ -218,7 +269,7 @@
       </article>
 
       <article style="border: 1px solid var(--line, rgba(255,255,255,0.1)); border-radius: 14px; padding: clamp(24px, 2.5vw, 32px); background: var(--bg, #0e0d0b); display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
-        <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 14px;">
+        <div class="work-card-head" style="margin-bottom: 14px;">
           <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--accent, #c9a24a);">WEARABLE · PLAY</div>
           <a href="https://brasswings-webapp.pages.dev/" target="_blank" style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted, #9a958c);">open ↗</a>
         </div>
@@ -286,7 +337,7 @@
   
   <section style="max-width: 1180px; margin: 0 auto; padding: clamp(48px, 7vh, 80px) clamp(20px, 5vw, 64px);">
     <a href="back-room/" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; border: 1px dashed var(--line, rgba(255,255,255,0.2)); border-radius: 14px; padding: clamp(22px, 3vw, 32px) clamp(24px, 3vw, 40px); transition: border-color 0.25s, background 0.25s;">
-      <div>
+      <div style="min-width: 0; flex: 1 1 260px;">
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent, #c9a24a); margin-bottom: 8px;">↳ the back room</div>
         <h3 style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(20px, 2.4vw, 27px); margin: 0 0 6px;">The Multiverse of Carlos is still running.</h3>
         <p style="color: var(--muted, #9a958c); font-size: 14.5px; line-height: 1.55; margin: 0; max-width: 60ch;">My original arcade site: dodge bugs, hit PANIC, get eaten by ghosts. Because not everything needs a business case. It's about the vibes.</p>
@@ -309,7 +360,7 @@
       <p style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: var(--muted, #9a958c); margin: 0 0 40px;">Barcelona · Spanish and English</p>
 
       <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center;">
-        <a href="mailto:macayaven@gmail.com" style="display: inline-flex; align-items: center; gap: 10px; background: var(--accent, #c9a24a); color: #14110a; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500; padding: 15px 26px; border-radius: 999px; transition: transform 0.18s, box-shadow 0.18s;">✉ macayaven@gmail.com</a>
+        <a href="mailto:macayaven@gmail.com" style="display: inline-flex; align-items: center; gap: 10px; max-width: 100%; background: var(--accent, #c9a24a); color: #14110a; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500; padding: 15px 26px; border-radius: 999px; transition: transform 0.18s, box-shadow 0.18s;">✉ macayaven@gmail.com</a>
         <a href="https://www.linkedin.com/in/carlos-crespo-macaya/" target="_blank" style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--muted, #9a958c); padding: 15px 18px; transition: color 0.2s;">LinkedIn ↗</a>
         <a href="https://github.com/macayaven" target="_blank" style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--muted, #9a958c); padding: 15px 18px; transition: color 0.2s;">GitHub ↗</a>
         <a href="https://x.com/macayaven" target="_blank" rel="noopener noreferrer" style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--muted, #9a958c); padding: 15px 18px; transition: color 0.2s;">X ↗</a>

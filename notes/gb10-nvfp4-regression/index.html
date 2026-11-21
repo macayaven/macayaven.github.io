@@ -24,12 +24,12 @@
   <style>
   :root { --accent: #5fb98f; --bg: #0e0d0b; --panel: #161512; --fg: #f2efe9; --text: #dcd8d0; --muted: #9a958c; --line: rgba(255,255,255,0.09); }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-wrap: break-word; }
   ::selection { background: #c9a24a; color: #0e0d0b; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   a { color: inherit; text-decoration: none; }
-  nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(16px, 5vw, 64px); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  nav { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(16px, 5vw, 64px); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
   .brand { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.04em; color: var(--fg); display: flex; align-items: center; gap: 9px; }
   .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
   .brand .muted { color: var(--muted); }
@@ -43,7 +43,7 @@
   h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: clamp(22px, 3vw, 26px); line-height: 1.25; color: var(--fg); margin: 2.4em 0 0.7em; }
   p { margin: 0 0 1.1em; }
   strong { color: var(--fg); font-weight: 600; }
-  article a { color: var(--fg); border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); transition: border-color 0.2s; }
+  article a { color: var(--fg); border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); transition: border-color 0.2s; overflow-wrap: anywhere; }
   article a:hover { border-bottom-color: var(--accent); }
   ul { margin: 0 0 1.2em; padding-left: 1.2em; }
   li { margin: 0 0 0.55em; }
@@ -51,7 +51,7 @@
   code { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; color: var(--fg); overflow-wrap: anywhere; }
   pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 0 0 1.3em; overflow-x: auto; line-height: 1.55; }
   pre code { background: none; border: 0; padding: 0; font-size: 13px; white-space: pre; overflow-wrap: normal; }
-  .table-wrap { overflow-x: auto; margin: 0 0 1.4em; border: 1px solid var(--line); border-radius: 10px; }
+  .table-wrap { overflow-x: auto; max-inline-size: 100%; margin: 0 0 1.4em; border: 1px solid var(--line); border-radius: 10px; }
   table { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
   th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
   th { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: 0.03em; color: var(--muted); background: var(--panel); }
@@ -91,7 +91,7 @@
 <p>I already had the model and drafter at the exact revisions in the report, so I could reproduce the tests independently on a second GB10.</p>
 <p>I used the reporter’s server command and matched the container images by digest, using the arm64 entries of their multi-arch tags. The model and drafter revisions stayed pinned.</p>
 <p>Each measurement used one request at a time: about 90 prompt tokens, a fresh UUID at the front to prevent prefix-cache hits, and 512 output tokens. I ran one warmup, then took the median of five runs. The client is public: <a href="https://gist.github.com/macayaven/53ce5072020dcd3943ea0e40a45e89d6" target="_blank" rel="noopener">decode_rate.py</a>.</p>
-<div class="table-wrap"><table>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Data table"><table>
 <thead>
 <tr>
 <th>Image</th>
@@ -138,7 +138,7 @@
 <p>vLLM 0.29.0 ships FlashInfer 0.6.18. In that release, <a href="https://github.com/flashinfer-ai/flashinfer/pull/4165" target="_blank" rel="noopener">FlashInfer PR #4165</a> excludes cuDNN from those candidates on SM12x when cuDNN is older than 9.23.1. The check avoids cuDNN workspace faults under CUDA graphs.</p>
 <p>That explained why the backend changed. I still needed to test whether it explained the performance drop.</p>
 <p>I went back to 0.28.0 and removed cuDNN from the same candidate list, using a small patch mounted read-only into the container.</p>
-<div class="table-wrap"><table>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Data table"><table>
 <thead>
 <tr>
 <th></th>

@@ -107,3 +107,26 @@ test("homepage links to Carlos's X profile in hero socials and contact section",
   assert.match(html, /href="https:\/\/x\.com\/macayaven"[^>]*>X<\/a>/);
   assert.match(html, /href="https:\/\/x\.com\/macayaven"[^>]*>X ↗<\/a>/);
 });
+
+test("homepage and notes avoid mobile horizontal overflow patterns", async () => {
+  const home = await readFile(rootIndex, "utf8");
+
+  assert.doesNotMatch(home, /style="[^"]*grid-column:\s*span\s*2/);
+  assert.match(home, /@container\s+work-grid\s*\(inline-size\s*>=\s*618px\)\s*\{[\s\S]*?\.work-card--featured\s*\{\s*grid-column:\s*span\s*2;/);
+  assert.match(home, /minmax\(min\(300px,\s*100%\),\s*1fr\)/);
+  assert.doesNotMatch(home, /overflow-x:\s*hidden/);
+  assert.doesNotMatch(home, /margin-bottom:\s*38px;\s*height:\s*20px;/);
+
+  const noteFiles = [
+    "../notes/night-chalk-drive/index.html",
+    "../notes/gb10-nvfp4-regression/index.html",
+    "../notes/ikigai-loop/index.html",
+    "../notes/plain-code-checks/index.html",
+    "../tools/build_note.py",
+  ];
+  for (const rel of noteFiles) {
+    const src = await readFile(new URL(rel, import.meta.url), "utf8");
+    assert.match(src, /article a\s*\{[^}]*overflow-wrap:\s*anywhere/, `${rel} should wrap long article links`);
+    assert.doesNotMatch(src, /body\s*\{[^}]*overflow-x:\s*hidden/, `${rel} should not mask overflow with body overflow-x: hidden`);
+  }
+});
